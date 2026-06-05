@@ -1,0 +1,49 @@
+{
+  "name": "billing-next",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Billing system — Next.js app",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "analyze": "node scripts/analyze-build.mjs",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@radix-ui/react-select": "^2.2.6",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@tanstack/react-virtual": "^3.13.26",
+    "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.9.0",
+    "mysql2": "^3.22.2",
+    "next": "16.2.4",
+    "pusher": "^5.3.3",
+    "pusher-js": "^8.5.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.5.0",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.6",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^3.2.4"
+  }
+}

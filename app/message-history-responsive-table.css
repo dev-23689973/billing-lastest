@@ -1,0 +1,210 @@
+/**
+ * Admin messages screen — Staff + STB history tables (embedded).
+ */
+.message-history-table-scroll {
+  container-type: inline-size;
+  container-name: message-history;
+  width: 100%;
+  max-width: 100%;
+  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.message-history-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+}
+
+.message-history-col-cell {
+  width: auto;
+  white-space: nowrap;
+  max-width: none;
+  overflow: visible;
+}
+
+.message-history-col-title {
+  min-width: 7rem;
+  max-width: 14rem;
+  overflow: hidden;
+}
+
+.message-history-col-message {
+  min-width: 4rem;
+  width: auto;
+  max-width: none;
+  overflow: hidden;
+}
+
+.message-history-cell-truncate {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Staff: title + message — message absorbs remaining space. */
+.message-history-table-scroll[data-message-history-layout="staff"] .message-history-col-title {
+  min-width: 7rem;
+  width: auto;
+  max-width: 14rem;
+}
+
+.message-history-table-scroll[data-message-history-layout="staff"] .message-history-col-message {
+  min-width: 8rem;
+  width: 100%;
+  max-width: 0;
+}
+
+/* STB: recipient + title + capped message — no flex hole before priority. */
+.message-history-table-scroll[data-message-history-layout="stb"] .message-history-col-recipient {
+  min-width: 7.5rem;
+  width: auto;
+  max-width: 10.5rem;
+}
+
+.message-history-table-scroll[data-message-history-layout="stb"] .message-history-col-title {
+  min-width: 7rem;
+  width: auto;
+  max-width: 14rem;
+}
+
+/* Capped when narrow; trail-fill expands message on wide viewports (not status). */
+.message-history-table-scroll[data-message-history-layout="stb"] .message-history-col-message:not(.message-history-col-trail-fill) {
+  min-width: 4rem;
+  width: auto;
+  max-width: 12rem;
+}
+
+.message-history-table-scroll[data-message-history-layout="stb"] .message-history-col-message.message-history-col-trail-fill {
+  min-width: 4rem;
+  width: 100%;
+  max-width: 0;
+}
+
+.message-history-col-audience { min-width: 4.5rem; }
+.message-history-col-priority { min-width: 5.5rem; }
+.message-history-col-sentBy { min-width: 4.75rem; }
+.message-history-col-recipients,
+.message-history-col-dismissed,
+.message-history-col-read {
+  min-width: 3.75rem;
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+}
+.message-history-col-sentAt { min-width: 7.5rem; }
+.message-history-col-recipient { min-width: 7.5rem; }
+.message-history-col-status {
+  width: 1%;
+  min-width: 4.5rem;
+  max-width: 6.5rem;
+}
+
+/* Last data column — stretches table to viewport without a hole before the chevron. */
+.message-history-col-trail-fill {
+  width: 100%;
+  max-width: none;
+}
+
+.message-history-table-scroll .message-history-actions-col {
+  width: 4.75rem !important;
+  min-width: 4.75rem !important;
+  max-width: 4.75rem !important;
+  overflow: visible;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  box-sizing: border-box;
+}
+
+.message-history-table-scroll .message-history-actions-col > div {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.message-history-expand-btn {
+  display: none !important;
+}
+
+.message-history-table-scroll[data-message-history-has-hidden] .message-history-expand-btn {
+  display: inline-flex !important;
+}
+
+.message-history-table-scroll[data-message-history-hidden~="audience"] .message-history-hide-audience {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="sentBy"] .message-history-hide-sentBy {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="recipients"] .message-history-hide-recipients {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="dismissed"] .message-history-hide-dismissed {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="read"] .message-history-hide-read {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="sentAt"] .message-history-hide-sentAt {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="status"] .message-history-hide-status {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="priority"] .message-history-hide-priority {
+  display: none !important;
+}
+.message-history-table-scroll[data-message-history-hidden~="title"] .message-history-hide-title {
+  display: none !important;
+}
+
+.message-history-table-scroll tr.staff-hub-expand-details-row > td {
+  width: 100%;
+  max-width: 0;
+  box-sizing: border-box;
+  padding: 0.375rem 0.5rem 0.5rem !important;
+  vertical-align: top;
+}
+
+.message-history-table-scroll tr.staff-hub-expand-details-row > td > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.message-history-table-scroll .staff-hub-expand-details-panel {
+  flex-direction: column;
+}
+
+.message-history-table-scroll .staff-hub-detail-column {
+  width: 100%;
+}
+
+.message-history-table-scroll .staff-hub-detail-column--right {
+  border-left: none;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.message-history-table-scroll .staff-hub-detail-field[data-detail-id="title"] .staff-hub-detail-value,
+.message-history-table-scroll .staff-hub-detail-field[data-detail-id="message"] .staff-hub-detail-value {
+  flex: 0 1 60%;
+  min-width: 0;
+  max-width: 60%;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.message-history-table-scroll .staff-hub-detail-field[data-detail-id="message"] .staff-hub-detail-value > * {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
+  line-height: 1.45;
+}

@@ -1,0 +1,116 @@
+/**
+ * Portal operator "My inbox" — same responsive pattern as staff hub / resellers list.
+ * Column hide is driven by `data-portal-inbox-hidden` on `.portal-inbox-table-scroll`.
+ */
+.portal-inbox-table-scroll {
+  container-type: inline-size;
+  container-name: portal-inbox;
+  width: 100%;
+  max-width: 100%;
+  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.portal-inbox-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+}
+
+.portal-inbox-col-cell {
+  width: auto;
+  white-space: nowrap;
+  max-width: none;
+  overflow: visible;
+}
+
+.portal-inbox-col-title {
+  min-width: 5.5rem;
+  max-width: 12rem;
+  overflow: hidden;
+}
+
+.portal-inbox-col-message {
+  min-width: 6rem;
+  width: 100%;
+  max-width: 0;
+  overflow: hidden;
+}
+
+.portal-inbox-cell-truncate {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.portal-inbox-col-from {
+  min-width: 4.75rem;
+}
+
+.portal-inbox-col-status {
+  min-width: 5.25rem;
+}
+
+.portal-inbox-col-sentAt {
+  min-width: 6.25rem;
+}
+
+.portal-inbox-col-trail-fill {
+  width: 100%;
+  max-width: none;
+}
+
+.portal-inbox-table-scroll .portal-inbox-actions-col {
+  width: 5.5rem !important;
+  min-width: 5.5rem !important;
+  max-width: 5.5rem !important;
+  overflow: visible;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  box-sizing: border-box;
+}
+
+.portal-inbox-table-scroll .portal-inbox-actions-col > div {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+}
+
+.portal-inbox-expand-btn {
+  display: none !important;
+}
+
+.portal-inbox-table-scroll[data-portal-inbox-has-hidden] .portal-inbox-expand-btn {
+  display: inline-flex !important;
+}
+
+.portal-inbox-table-scroll tr.staff-hub-expand-details-row > td {
+  width: 100%;
+  max-width: 0;
+  box-sizing: border-box;
+  padding: 0.375rem 0.5rem 0.5rem !important;
+  vertical-align: top;
+}
+
+.portal-inbox-table-scroll tr.staff-hub-expand-details-row > td > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.portal-inbox-table-scroll[data-portal-inbox-hidden~="from"] .portal-inbox-hide-from {
+  display: none !important;
+}
+
+.portal-inbox-table-scroll[data-portal-inbox-hidden~="status"] .portal-inbox-hide-status {
+  display: none !important;
+}
+
+.portal-inbox-table-scroll[data-portal-inbox-hidden~="sentAt"] .portal-inbox-hide-sentAt {
+  display: none !important;
+}

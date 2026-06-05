@@ -1,0 +1,27 @@
+/**
+ * Optional utility classes — prefer `lib/ui/responsiveScale.ts` in TypeScript.
+ * Root fluid type scale: `--font-size` in `globals.css`.
+ */
+@layer components {
+  .ui-text-body {
+    @apply text-xs leading-relaxed sm:text-sm md:text-base;
+  }
+  .ui-text-caption {
+    @apply text-[10px] leading-tight sm:text-[11px] md:text-xs;
+  }
+  .ui-badge {
+    @apply inline-flex items-center justify-center rounded-full border px-1.5 py-0.5 text-[10px] font-semibold leading-tight sm:px-2 sm:py-0.5 sm:text-[11px] md:text-xs;
+  }
+  .ui-btn-density {
+    @apply h-9 min-h-9 px-3 text-xs sm:h-10 sm:px-4 sm:text-sm;
+  }
+  .ui-icon-sm {
+    @apply h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4;
+  }
+  .ui-gap-section {
+    @apply gap-3 sm:gap-4 md:gap-6;
+  }
+  .ui-pad-card {
+    @apply p-3 sm:p-4 md:p-5;
+  }
+}

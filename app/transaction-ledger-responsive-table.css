@@ -1,0 +1,137 @@
+/**
+ * Admin transaction ledger — responsive hide + expand panel (same pattern as transactions modal).
+ */
+.transaction-ledger-table-scroll {
+  container-type: inline-size;
+  container-name: ledger;
+  width: 100%;
+  max-width: 100%;
+  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.transaction-ledger-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+}
+
+.transaction-ledger-col-cell {
+  width: auto;
+  white-space: nowrap;
+  max-width: none;
+  overflow: visible;
+}
+
+.transaction-ledger-col-timestamp { min-width: 7.25rem; }
+.transaction-ledger-col-user { min-width: 5rem; }
+.transaction-ledger-col-account { min-width: 5rem; }
+.transaction-ledger-col-type { min-width: 4.25rem; }
+.transaction-ledger-col-category { min-width: 4.5rem; }
+.transaction-ledger-col-amount { min-width: 5rem; }
+.transaction-ledger-col-bonusAmt { min-width: 4.5rem; }
+.transaction-ledger-col-promo { min-width: 12rem; }
+.transaction-ledger-col-note {
+  min-width: 14rem;
+  max-width: 22rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transaction-ledger-col-fill {
+  width: 100%;
+}
+
+.transaction-ledger-table-scroll .transaction-ledger-actions-col {
+  width: 4.25rem !important;
+  min-width: 4.25rem !important;
+  max-width: 4.25rem !important;
+  overflow: visible;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  box-sizing: border-box;
+}
+
+.transaction-ledger-expand-btn {
+  display: none !important;
+}
+
+.transaction-ledger-table-scroll[data-ledger-has-hidden] .transaction-ledger-expand-btn {
+  display: inline-flex !important;
+}
+
+.transaction-ledger-table-scroll[data-ledger-hidden~="timestamp"] .transaction-ledger-hide-timestamp {
+  display: none !important;
+}
+.transaction-ledger-table-scroll[data-ledger-hidden~="user"] .transaction-ledger-hide-user {
+  display: none !important;
+}
+.transaction-ledger-table-scroll[data-ledger-hidden~="account"] .transaction-ledger-hide-account {
+  display: none !important;
+}
+.transaction-ledger-table-scroll[data-ledger-hidden~="category"] .transaction-ledger-hide-category {
+  display: none !important;
+}
+.transaction-ledger-table-scroll[data-ledger-hidden~="bonusAmt"] .transaction-ledger-hide-bonusAmt {
+  display: none !important;
+}
+.transaction-ledger-table-scroll[data-ledger-hidden~="promo"] .transaction-ledger-hide-promo {
+  display: none !important;
+}
+.transaction-ledger-table-scroll[data-ledger-hidden~="note"] .transaction-ledger-hide-note {
+  display: none !important;
+}
+
+.transaction-ledger-table-scroll tr.staff-hub-expand-details-row > td {
+  width: 100%;
+  max-width: 0;
+  box-sizing: border-box;
+}
+
+.transaction-ledger-table-scroll tr.staff-hub-expand-details-row > td > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.transaction-ledger-table-scroll .staff-hub-expand-details-panel {
+  flex-direction: column;
+}
+
+.transaction-ledger-table-scroll .staff-hub-detail-column {
+  width: 100%;
+}
+
+.transaction-ledger-table-scroll .staff-hub-detail-column--right {
+  border-left: none;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.transaction-ledger-table-scroll .staff-hub-detail-field[data-detail-id="note"] .staff-hub-detail-item-row {
+  align-items: flex-start;
+}
+
+.transaction-ledger-table-scroll .staff-hub-detail-field[data-detail-id="note"] .staff-hub-detail-value {
+  flex: 0 1 60%;
+  min-width: 0;
+  max-width: 60%;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.transaction-ledger-table-scroll .staff-hub-detail-field[data-detail-id="note"] .staff-hub-detail-value > * {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
+  line-height: 1.45;
+}
+
+.transaction-ledger-table-scroll .staff-hub-detail-field[data-detail-id="promo"] .staff-hub-detail-value {
+  justify-content: flex-end;
+}

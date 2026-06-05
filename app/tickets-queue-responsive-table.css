@@ -1,0 +1,191 @@
+/**
+ * Ticket queue dashboard — responsive hide + expand panel (staff hub / resellers pattern).
+ */
+.tickets-queue-table-scroll {
+  container-type: inline-size;
+  container-name: tickets-queue;
+  width: 100%;
+  max-width: 100%;
+  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.tickets-queue-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+}
+
+.tickets-queue-col-cell {
+  width: auto;
+  white-space: nowrap;
+  max-width: none;
+  overflow: visible;
+}
+
+.tickets-queue-col-subject {
+  min-width: 7rem;
+  width: auto;
+  max-width: 14rem;
+  overflow: hidden;
+}
+
+.tickets-queue-cell-truncate {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tickets-queue-col-category {
+  min-width: 5.5rem;
+  max-width: 10rem;
+  overflow: hidden;
+}
+.tickets-queue-col-channel {
+  min-width: 5.5rem;
+  max-width: 10rem;
+  overflow: hidden;
+}
+.tickets-queue-col-createdBy {
+  min-width: 4.75rem;
+}
+.tickets-queue-col-assignedAgent {
+  min-width: 4.75rem;
+}
+.tickets-queue-col-priority {
+  min-width: 5.5rem;
+}
+.tickets-queue-col-status {
+  min-width: 5.25rem;
+}
+.tickets-queue-col-content:not(.tickets-queue-col-trail-fill) {
+  min-width: 8rem;
+  width: auto;
+  max-width: 24rem;
+  overflow: hidden;
+}
+
+/* Absorb extra viewport width in the body column, not Updated/Created. */
+.tickets-queue-col-content.tickets-queue-col-trail-fill {
+  min-width: 8rem;
+  width: 100%;
+  max-width: 0;
+  overflow: hidden;
+}
+
+.tickets-queue-col-comments {
+  min-width: 3.75rem;
+}
+
+.tickets-queue-col-created,
+.tickets-queue-col-updated {
+  width: 1%;
+  min-width: 5.75rem;
+  max-width: 8.5rem;
+  white-space: nowrap;
+}
+
+.tickets-queue-table-scroll .tickets-queue-actions-col {
+  width: 4.75rem !important;
+  min-width: 4.75rem !important;
+  max-width: 4.75rem !important;
+  overflow: visible;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  box-sizing: border-box;
+}
+
+.tickets-queue-table-scroll .tickets-queue-actions-col > div {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.tickets-queue-expand-btn {
+  display: none !important;
+}
+
+.tickets-queue-table-scroll[data-tickets-queue-has-hidden] .tickets-queue-expand-btn {
+  display: inline-flex !important;
+}
+
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="category"] .tickets-queue-hide-category {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="channel"] .tickets-queue-hide-channel {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="createdBy"] .tickets-queue-hide-createdBy {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="assignedAgent"] .tickets-queue-hide-assignedAgent {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="priority"] .tickets-queue-hide-priority {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="content"] .tickets-queue-hide-content {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="comments"] .tickets-queue-hide-comments {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="created"] .tickets-queue-hide-created {
+  display: none !important;
+}
+.tickets-queue-table-scroll[data-tickets-queue-hidden~="updated"] .tickets-queue-hide-updated {
+  display: none !important;
+}
+
+.tickets-queue-table-scroll tr.staff-hub-expand-details-row > td {
+  width: 100%;
+  max-width: 0;
+  box-sizing: border-box;
+  padding: 0.375rem 0.5rem 0.5rem !important;
+  vertical-align: top;
+}
+
+.tickets-queue-table-scroll tr.staff-hub-expand-details-row > td > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tickets-queue-table-scroll .staff-hub-expand-details-panel {
+  flex-direction: column;
+}
+
+.tickets-queue-table-scroll .staff-hub-detail-column {
+  width: 100%;
+}
+
+.tickets-queue-table-scroll .staff-hub-detail-column--right {
+  border-left: none;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.tickets-queue-table-scroll .staff-hub-detail-field[data-detail-id="content"] .staff-hub-detail-value,
+.tickets-queue-table-scroll .staff-hub-detail-field[data-detail-id="subject"] .staff-hub-detail-value {
+  flex: 0 1 60%;
+  min-width: 0;
+  max-width: 60%;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.tickets-queue-table-scroll .staff-hub-detail-field[data-detail-id="content"] .staff-hub-detail-value > *,
+.tickets-queue-table-scroll .staff-hub-detail-field[data-detail-id="subject"] .staff-hub-detail-value > * {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
+  line-height: 1.45;
+}

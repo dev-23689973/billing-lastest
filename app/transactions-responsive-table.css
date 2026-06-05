@@ -1,0 +1,267 @@
+/**
+ * Staff transactions modal table — fluid columns, fixed expand column, overflow hide.
+ * Expand panel reuses `.staff-hub-expand-details-panel` layout from staff-hub-responsive-table.css.
+ */
+.transactions-table-scroll {
+  container-type: inline-size;
+  container-name: txn;
+  width: 100%;
+  max-width: 100%;
+  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.transactions-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+}
+
+.transactions-col-cell {
+  width: auto;
+  white-space: nowrap;
+  max-width: none;
+  overflow: visible;
+}
+
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-type {
+  min-width: 4.25rem;
+}
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-credits {
+  min-width: 3.5rem;
+}
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-months {
+  min-width: 3.25rem;
+}
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-account {
+  min-width: 5.5rem;
+}
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-coverageStart {
+  min-width: 5rem;
+}
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-coverageEnd {
+  min-width: 5rem;
+}
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-remarks {
+  width: 14rem;
+  min-width: 5rem;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.transactions-table-scroll:not([data-txn-layout="fluid"]) .transactions-col-timestamp {
+  min-width: 8.5rem;
+}
+
+/* Transaction history modals — fixed narrow metrics, remarks fills width. */
+.transactions-table-scroll[data-txn-layout="fluid"] table {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] col.transactions-col-type,
+.transactions-table-scroll[data-txn-layout="fluid"] th.transactions-col-type,
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-type {
+  width: 5.5rem !important;
+  max-width: 5.5rem !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] col.transactions-col-credits,
+.transactions-table-scroll[data-txn-layout="fluid"] th.transactions-col-credits,
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-credits {
+  width: 5.25rem !important;
+  max-width: 5.25rem !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] col.transactions-col-months,
+.transactions-table-scroll[data-txn-layout="fluid"] th.transactions-col-months,
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-months {
+  width: 4rem !important;
+  max-width: 4rem !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] col.transactions-col-account,
+.transactions-table-scroll[data-txn-layout="fluid"] th.transactions-col-account,
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-account {
+  width: 7rem !important;
+  max-width: 7rem !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] col.transactions-col-timestamp,
+.transactions-table-scroll[data-txn-layout="fluid"] th.transactions-col-timestamp,
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-timestamp {
+  width: 10.5rem !important;
+  max-width: 10.5rem !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] .transactions-col-type,
+.transactions-table-scroll[data-txn-layout="fluid"] .transactions-col-credits,
+.transactions-table-scroll[data-txn-layout="fluid"] .transactions-col-months {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  text-align: center;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] .transactions-col-account {
+  text-align: left;
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+}
+
+/* No width on col — remarks is the fill column in table-layout: fixed. */
+.transactions-table-scroll[data-txn-layout="fluid"] th.transactions-col-remarks,
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-remarks {
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  text-align: left;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"]:not([data-txn-has-hidden]) .transactions-actions-col {
+  display: none !important;
+}
+
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-account,
+.transactions-table-scroll[data-txn-layout="fluid"] td.transactions-col-remarks {
+  contain: paint;
+}
+
+.transactions-table-scroll .transactions-actions-col {
+  width: 4.25rem !important;
+  min-width: 4.25rem !important;
+  max-width: 4.25rem !important;
+  overflow: visible;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  box-sizing: border-box;
+}
+
+.transactions-expand-btn {
+  display: none !important;
+}
+
+.transactions-table-scroll[data-txn-has-hidden] .transactions-expand-btn {
+  display: inline-flex !important;
+}
+
+.transactions-table-scroll[data-txn-hidden~="type"] .transactions-hide-type {
+  display: none !important;
+}
+.transactions-table-scroll[data-txn-hidden~="credits"] .transactions-hide-credits {
+  display: none !important;
+}
+.transactions-table-scroll[data-txn-hidden~="months"] .transactions-hide-months {
+  display: none !important;
+}
+.transactions-table-scroll[data-txn-hidden~="account"] .transactions-hide-account {
+  display: none !important;
+}
+.transactions-table-scroll[data-txn-hidden~="coverageStart"] .transactions-hide-coverageStart {
+  display: none !important;
+}
+.transactions-table-scroll[data-txn-hidden~="coverageEnd"] .transactions-hide-coverageEnd {
+  display: none !important;
+}
+.transactions-table-scroll[data-txn-hidden~="remarks"] .transactions-hide-remarks {
+  display: none !important;
+}
+.transactions-table-scroll[data-txn-hidden~="timestamp"] .transactions-hide-timestamp {
+  display: none !important;
+}
+
+/*
+ * Table uses width:max-content for column-hide measurement; colspan detail cells must
+ * not grow the table past the scroll viewport (long remarks were causing horizontal scroll).
+ */
+.transactions-table-scroll tr.staff-hub-expand-details-row > td {
+  width: 100%;
+  max-width: 0;
+  box-sizing: border-box;
+}
+
+.transactions-table-scroll tr.staff-hub-expand-details-row > td > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* One column — each field uses full panel width (remarks were squeezed in a 50% column). */
+.transactions-table-scroll .staff-hub-expand-details-panel {
+  flex-direction: column;
+}
+
+.transactions-table-scroll .staff-hub-detail-column {
+  width: 100%;
+}
+
+.transactions-table-scroll .staff-hub-detail-column--right {
+  border-left: none;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+/* Remarks: same label ··· value row as other fields; value wraps on the right. */
+.transactions-table-scroll .staff-hub-detail-field[data-detail-id="remarks"] .staff-hub-detail-item-row {
+  align-items: flex-start;
+}
+
+.transactions-table-scroll .staff-hub-detail-field[data-detail-id="remarks"] .staff-hub-detail-label {
+  padding-top: 0.1em;
+}
+
+.transactions-table-scroll .staff-hub-detail-field[data-detail-id="remarks"] .staff-hub-detail-leader {
+  flex: 1 1 0;
+  min-width: 1rem;
+  align-self: baseline;
+}
+
+.transactions-table-scroll .staff-hub-detail-field[data-detail-id="remarks"] .staff-hub-detail-value {
+  flex: 0 1 55%;
+  min-width: 0;
+  max-width: 55%;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.transactions-table-scroll .staff-hub-detail-field[data-detail-id="remarks"] .staff-hub-detail-value > span {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
+  line-height: 1.45;
+}
+
+/* Short fields: leader fills the gap between label and value. */
+.transactions-table-scroll .staff-hub-detail-field:not([data-detail-id="remarks"]) .staff-hub-detail-leader {
+  flex: 1 1 0;
+  min-width: 1rem;
+}
+
+.transactions-table-scroll .staff-hub-detail-field:not([data-detail-id="remarks"]) .staff-hub-detail-value {
+  flex: 0 0 auto;
+}

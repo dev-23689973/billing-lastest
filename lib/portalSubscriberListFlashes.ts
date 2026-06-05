@@ -1,0 +1,44 @@
+import type { FlashToastItem } from "@/components/FlashToasts";
+import { PORTAL_ADD_USER_NO_CREDITS_TITLE } from "@/lib/portal/portalAddUserMessages";
+import { operatorCopy } from "@/lib/operatorUiCopy";
+import {
+  portalUsersDeleteListErrorMessage,
+  portalUsersRenewListErrorMessage,
+  portalUsersResetListErrorMessage,
+  portalUsersStatusQuickErrorMessage,
+} from "@/lib/portalUsersRenewListMessages";
+
+type FlashSp = {
+  ok?: string;
+  error?: string;
+  bal?: string;
+  req?: string;
+  renew_acc?: string;
+};
+
+/** URL flash → Sonner items for manager/reseller/dealer subscriber list pages. */
+export function portalSubscriberListFlashItems(sp: FlashSp): FlashToastItem[] {
+  const renewErrMsg = portalUsersRenewListErrorMessage(sp);
+  const resetErrMsg = portalUsersResetListErrorMessage(sp.error);
+  const deleteErrMsg = portalUsersDeleteListErrorMessage(sp.error);
+  const statusErrMsg = portalUsersStatusQuickErrorMessage(sp.error);
+
+  return [
+    ...(sp.ok === "created" ? [{ type: "success" as const, message: "User account was created successfully." }] : []),
+    ...(sp.ok === "user_saved" ? [{ type: "success" as const, message: "User profile updated successfully." }] : []),
+    ...(sp.ok === "renew" ? [{ type: "success" as const, message: operatorCopy.subscriptionExtended }] : []),
+    ...(sp.ok === "renew_trial" ? [{ type: "success" as const, message: operatorCopy.freeTrialApplied }] : []),
+    ...(sp.ok === "renew_recover" ? [{ type: "success" as const, message: operatorCopy.creditsRecovered }] : []),
+    ...(sp.ok === "reset" ? [{ type: "success" as const, message: operatorCopy.deviceResetSuccess }] : []),
+    ...(sp.ok === "deleted_user" ? [{ type: "success" as const, message: operatorCopy.accountDeleted }] : []),
+    ...(sp.ok === "activated" ? [{ type: "success" as const, message: "STB box was activated successfully." }] : []),
+    ...(sp.ok === "blocked" ? [{ type: "success" as const, message: "STB box was blocked successfully." }] : []),
+    ...(sp.error === "no_credits" ? [{ type: "error" as const, message: PORTAL_ADD_USER_NO_CREDITS_TITLE }] : []),
+    ...(renewErrMsg ? [{ type: "error" as const, message: renewErrMsg }] : []),
+    ...(resetErrMsg ? [{ type: "error" as const, message: resetErrMsg }] : []),
+    ...(deleteErrMsg ? [{ type: "error" as const, message: deleteErrMsg }] : []),
+    ...(statusErrMsg ? [{ type: "error" as const, message: statusErrMsg }] : []),
+  ];
+}
+
+export const PORTAL_SUBSCRIBER_LIST_FLASH_KEYS = ["ok", "error", "bal", "req", "renew_acc"] as const;

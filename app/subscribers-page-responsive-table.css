@@ -1,0 +1,265 @@
+/**
+ * Users page embedded table — same responsive pattern as staff hub / resellers list.
+ */
+.subscribers-page-table-scroll {
+  --subscribers-page-label-size: 0.8125rem;
+  --subscribers-page-value-size: 0.875rem;
+  --subscribers-page-line-height: 1.25;
+  container-type: inline-size;
+  container-name: subscribers-page;
+  width: 100%;
+  max-width: 100%;
+  scrollbar-gutter: stable;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.subscribers-page-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  table-layout: auto;
+}
+
+.subscribers-page-col-cell {
+  width: auto;
+  white-space: nowrap;
+  max-width: none;
+  overflow: visible;
+}
+
+.subscribers-page-col-account {
+  min-width: 6rem;
+  text-align: left !important;
+}
+
+.subscribers-page-table-scroll thead .subscribers-page-col-account {
+  text-align: left !important;
+}
+
+.subscribers-page-col-name,
+.subscribers-page-col-username,
+.subscribers-page-col-mac,
+.subscribers-page-col-parents {
+  text-align: center !important;
+}
+
+.subscribers-page-table-scroll thead .subscribers-page-col-name,
+.subscribers-page-table-scroll thead .subscribers-page-col-username,
+.subscribers-page-table-scroll thead .subscribers-page-col-mac,
+.subscribers-page-table-scroll thead .subscribers-page-col-parents {
+  text-align: center !important;
+}
+.subscribers-page-col-name { min-width: 7rem; }
+.subscribers-page-col-username { min-width: 6rem; }
+.subscribers-page-col-mac { min-width: 7rem; }
+.subscribers-page-col-parents { min-width: 6rem; }
+.subscribers-page-col-status { min-width: 5rem; }
+.subscribers-page-col-state { min-width: 9rem; max-width: 14rem; }
+.subscribers-page-col-created { min-width: 6.5rem; }
+.subscribers-page-col-expiry { min-width: 7rem; }
+.subscribers-page-col-autoRenew { min-width: 4.5rem; }
+
+.subscribers-page-col-fill {
+  width: 100%;
+}
+
+.subscribers-page-table-scroll .subscribers-page-actions-col {
+  width: 4.25rem !important;
+  min-width: 4.25rem !important;
+  max-width: 4.25rem !important;
+  overflow: visible;
+  padding-left: 0.25rem !important;
+  padding-right: 0.25rem !important;
+  box-sizing: border-box;
+}
+
+.subscribers-page-table-scroll .subscribers-page-actions-col > div {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.subscribers-page-expand-btn {
+  display: none !important;
+}
+
+.subscribers-page-table-scroll[data-subscribers-page-has-hidden] .subscribers-page-expand-btn {
+  display: inline-flex !important;
+}
+
+.subscribers-page-table-scroll table {
+  font-size: var(--subscribers-page-value-size);
+  line-height: var(--subscribers-page-line-height);
+}
+
+.subscribers-page-table-scroll thead th {
+  font-size: var(--subscribers-page-label-size) !important;
+  line-height: var(--subscribers-page-line-height) !important;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.375rem !important;
+}
+
+.subscribers-page-table-scroll tbody td {
+  font-size: var(--subscribers-page-value-size) !important;
+  line-height: var(--subscribers-page-line-height) !important;
+  font-weight: 500;
+  padding: 0.25rem 0.375rem !important;
+}
+
+.subscribers-page-table-scroll tbody td .subscriber-account-username-link {
+  font-size: inherit !important;
+  line-height: inherit !important;
+}
+
+/* Skip layout/paint for off-screen rows (25–100/page) without changing table behavior. */
+.subscribers-page-table-scroll tbody > tr {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 2.125rem;
+}
+
+.subscribers-page-table-scroll tbody > tr.staff-hub-expand-details-row {
+  contain-intrinsic-size: auto 8rem;
+}
+
+.subscribers-page-table-scroll tbody > tr.subscribers-page-virtual-pad td {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+@media (min-width: 640px) {
+  .subscribers-page-table-scroll thead th {
+    padding: 0.3125rem 0.5rem !important;
+  }
+
+  .subscribers-page-table-scroll tbody td {
+    padding: 0.3125rem 0.5rem !important;
+  }
+}
+
+.subscribers-page-table-scroll tr.staff-hub-expand-details-row > td {
+  width: 100%;
+  max-width: 0;
+  box-sizing: border-box;
+  padding: 0.375rem 0.5rem 0.5rem !important;
+  vertical-align: top;
+  background: transparent;
+}
+
+.subscribers-page-expand-details-panel {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--muted) 14%, transparent);
+}
+
+.subscribers-page-detail-column {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+  padding: 0.5rem 0.75rem;
+}
+
+.subscribers-page-detail-column--right {
+  border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+@media (max-width: 639px) {
+  .subscribers-page-expand-details-panel {
+    flex-direction: column;
+  }
+
+  .subscribers-page-detail-column--right {
+    border-left: none;
+    border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  }
+}
+
+.subscribers-page-detail-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.subscribers-page-detail-item-row {
+  display: flex;
+  align-items: baseline;
+  width: 100%;
+  min-width: 0;
+  gap: 0.5rem;
+}
+
+.subscribers-page-detail-label {
+  flex: 0 0 auto;
+  font-size: var(--subscribers-page-label-size, 0.8125rem);
+  font-weight: 500;
+  line-height: var(--subscribers-page-line-height, 1.35);
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.subscribers-page-detail-leader {
+  flex: 1 1 auto;
+  min-width: 12px;
+  height: 0.85em;
+  align-self: baseline;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image: radial-gradient(circle, var(--muted-foreground) 0.5px, transparent 1.5px);
+  background-size: 6px 3px;
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+}
+
+.subscribers-page-detail-value {
+  flex: 0 1 auto;
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: flex-end;
+  font-size: var(--subscribers-page-value-size, 0.875rem);
+  font-weight: 500;
+  line-height: var(--subscribers-page-line-height, 1.35);
+  color: var(--foreground);
+  text-align: right;
+}
+
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="name"] .subscribers-page-hide-name {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="username"] .subscribers-page-hide-username {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="mac"] .subscribers-page-hide-mac {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="parents"] .subscribers-page-hide-parents {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="status"] .subscribers-page-hide-status {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="state"] .subscribers-page-hide-state {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="created"] .subscribers-page-hide-created {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="expiry"] .subscribers-page-hide-expiry {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="autoRenew"] .subscribers-page-hide-autoRenew {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="account"] .subscribers-page-hide-account {
+  display: none !important;
+}
