@@ -37,8 +37,18 @@ const deductionTierSelectClass = cn(
 const tierHeadCell =
   "px-1 py-1.5 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground";
 const tierRowGrid =
-  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_3rem] items-center gap-x-2 border-b border-border/60 px-2 py-1.5 last:border-b-0 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_3.5rem_3rem]";
+  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_3rem] items-center gap-x-2 border-b border-border/60 px-2 py-1.5 last:border-b-0 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_4.5rem_3rem]";
 const tierCell = "min-w-0";
+
+const tierBonusBadgeClass = cn(
+  "inline-flex h-8 min-w-[3.25rem] items-center justify-center rounded-lg border px-2",
+  "font-mono text-xs font-semibold tabular-nums leading-none",
+  "border-emerald-300/70 bg-emerald-50/95 text-emerald-700 shadow-sm",
+  "dark:border-emerald-500/30 dark:bg-emerald-500/12 dark:text-emerald-300",
+);
+
+const tierBonusEmptyClass =
+  "inline-flex h-8 min-w-[3.25rem] items-center justify-center text-sm font-medium text-muted-foreground/60";
 
 const tierRemoveButtonClass = cn(
   "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border p-0 shadow-sm",
@@ -151,7 +161,10 @@ export function DeductionsConfigForm({
                 </span>
               </span>
               <span className={cn(tierHeadCell, tierCell, "hidden sm:block")} role="columnheader">
-                +mo
+                <span className="inline-flex items-center justify-center gap-0.5">
+                  <Gift className="h-3 w-3 shrink-0 text-emerald-500/90" aria-hidden />
+                  +mo
+                </span>
               </span>
               <span className={cn(tierHeadCell, "text-center")} role="columnheader" aria-label="Actions" />
             </div>
@@ -210,14 +223,15 @@ export function DeductionsConfigForm({
                     />
                   </span>
                   <span className={cn(tierCell, "hidden justify-center sm:flex")} role="cell">
-                    <span
-                      className={cn(
-                        "inline-block rounded-md px-1.5 py-0.5 font-mono text-[10px] tabular-nums",
-                        bonus > 0 ? "bg-emerald-500/6 text-emerald-600 dark:text-emerald-300/90" : "text-muted-foreground",
-                      )}
-                    >
-                      {bonus > 0 ? `+${bonus}` : "—"}
-                    </span>
+                    {bonus > 0 ? (
+                      <span className={tierBonusBadgeClass} title={`${bonus} bonus month${bonus === 1 ? "" : "s"}`}>
+                        +{bonus}
+                      </span>
+                    ) : (
+                      <span className={tierBonusEmptyClass} aria-hidden>
+                        —
+                      </span>
+                    )}
                   </span>
                   <span className="flex justify-center" role="cell">
                     <Button
