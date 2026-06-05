@@ -8,6 +8,14 @@ function renewPeriodMonths(option: ValidityOption): number {
 
 export type SubscriberRenewRecoverSuccessMode = "renew" | "recover";
 
+export type BulkRenewSuccessWalletRow = {
+  debitUsername: string;
+  walletBefore: number;
+  walletAfter: number;
+  accountCount: number;
+  chargedTotal: number;
+};
+
 export type SubscriberRenewRecoverSuccessDetails = {
   mode: SubscriberRenewRecoverSuccessMode;
   account: string;
@@ -23,6 +31,8 @@ export type SubscriberRenewRecoverSuccessDetails = {
   bonusMonthsRecovered?: number;
   expiryBeforeLabel?: string | null;
   expiryAfterLabel?: string | null;
+  bulkWalletRows?: BulkRenewSuccessWalletRow[];
+  bulkTotalDebited?: number;
 };
 
 export function buildSubscriberRenewSuccessDetails(input: {

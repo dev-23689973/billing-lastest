@@ -27,8 +27,16 @@ import {
   subscriberExpiryBadgeClassName,
 } from "@/components/admin/HierarchyTableBadges";
 import { dataTableStickyTh } from "@/lib/ui/dataTableSticky";
-import { BulkRenewValiditySelect } from "@/components/admin/BulkRenewValiditySelect";
-import { clampValiditySelection, filterValidityOptionsByDebitCredits } from "@/lib/validityOptions";
+import { BulkRenewAccountsModal } from "@/components/subscribers/BulkRenewAccountsModal";
+import { SubscriberRenewRecoverSuccessModal } from "@/components/subscribers/SubscriberRenewRecoverSuccessModal";
+import {
+  aggregateBulkRenewAvailability,
+  buildBulkRenewSuccessDetails,
+  clampValiditySelection,
+  filterBulkRenewValidityOptions,
+  type BulkRenewAvailabilitySnapshot,
+} from "@/lib/bulkRenewPlanning";
+import type { SubscriberRenewRecoverSuccessDetails } from "@/lib/subscriberRenewRecoverSuccess";
 import { dispatchBillingHeaderStatsRefresh } from "@/lib/realtime/client-events";
 
 export type PortalUsersBulkVariant = "manager" | "reseller" | "dealer";
@@ -107,8 +115,9 @@ export function PortalUsersTableWithBulkRenew({
   const [renewOpen, setRenewOpen] = useState(false);
   const [resultsOpen, setResultsOpen] = useState(false);
   const [validity, setValidity] = useState("1");
-  const [operatorDebitCredits, setOperatorDebitCredits] = useState<number | null>(null);
+  const [bulkRenewAvailability, setBulkRenewAvailability] = useState<BulkRenewAvailabilitySnapshot | null>(null);
   const [walletLoading, setWalletLoading] = useState(false);
+  const [bulkRenewSuccess, setBulkRenewSuccess] = useState<SubscriberRenewRecoverSuccessDetails | null>(null);
   const [results, setResults] = useState<{ account: string; ok: boolean; message: string }[]>([]);
   const [autoRenewModalTarget, setAutoRenewModalTarget] = useState<{
     account: string;
@@ -129,15 +138,17 @@ export function PortalUsersTableWithBulkRenew({
   );
 
   const bulkRenewValidityOptions = useMemo(
-    () => filterValidityOptionsByDebitCredits(validityOptions, operatorDebitCredits),
-    [validityOptions, operatorDebitCredits],
+    () => filterBulkRenewValidityOptions(validityOptions, bulkRenewAvailability?.wallets ?? []),
+    [validityOptions, bulkRenewAvailability?.wallets],
   );
-
-  const bulkRenewNoAffordable = renewOpen && !walletLoading && bulkRenewValidityOptions.length === 0;
 
   useEffect(() => {
     if (!renewOpen) return;
-    setValidity((prev) => clampValiditySelection(prev, bulkRenewValidityOptions));
+    const timer = window.setTimeout(
+      () => setValidity((prev) => clampValiditySelection(prev, bulkRenewValidityOptions)),
+      0,
+    );
+    return () => window.clearTimeout(timer);
   }, [renewOpen, bulkRenewValidityOptions]);
 
   const allAccounts = useMemo(() => rows.map((r) => r.account), [rows]);
@@ -161,18 +172,61 @@ export function PortalUsersTableWithBulkRenew({
       toast.warning("Select accounts for renew");
       return;
     }
-    setOperatorDebitCredits(null);
+    setBulkRenewAvailability(null);
     setWalletLoading(true);
-    void getPortalOperatorWalletAction()
-      .then((res) => {
-        if (res.ok) setOperatorDebitCredits(res.debitCredits);
-      })
-      .finally(() => setWalletLoading(false));
+    const ids = Array.from(selected);
+    if (variant === "dealer") {
+      void getPortalOperatorWalletAction()
+        .then((res) => {
+          if (!res.ok) return;
+          setBulkRenewAvailability(
+            aggregateBulkRenewAvailability(
+              ids.length,
+              ids.map((account) => ({
+                account,
+                ok: true,
+                debitUsername: res.debitUsername,
+                debitCredits: res.debitCredits,
+              })),
+            ),
+          );
+        })
+        .finally(() => setWalletLoading(false));
+    } else {
+      void Promise.all(
+        ids.map(async (account) => {
+          const res = await getPortalAccountRenewRecoveryAvailabilityAction(account);
+          return { account, res };
+        }),
+      )
+        .then((rows) => {
+          setBulkRenewAvailability(
+            aggregateBulkRenewAvailability(
+              ids.length,
+              rows.map(({ account, res }) => ({
+                account,
+                ok: res.ok,
+                debitUsername: res.ok ? res.debitUsername : null,
+                debitCredits: res.ok ? res.debitCredits : null,
+              })),
+            ),
+          );
+        })
+        .finally(() => setWalletLoading(false));
+    }
     setRenewOpen(true);
+  }
+
+  function dismissBulkRenewSuccess() {
+    setBulkRenewSuccess(null);
+    if (results.length > 0) setResultsOpen(true);
   }
 
   function runBulkRenew() {
     const ids = Array.from(selected);
+    const wallets = bulkRenewAvailability?.wallets ?? [];
+    const affordableOptions = filterBulkRenewValidityOptions(validityOptions, wallets);
+    const selectedOption = affordableOptions.find((v) => v.value === validity);
     startTransition(async () => {
       const res = await bulkRenewPortalAccountsAction(ids, validity);
       if (!res.ok) {
@@ -187,12 +241,30 @@ export function PortalUsersTableWithBulkRenew({
         toast.error(msg);
         return;
       }
-      setResults(res.results);
+      const successes = res.results.filter((r) => r.ok);
+      const failures = res.results.filter((r) => !r.ok);
+      setResults(failures.length > 0 ? res.results : []);
       setRenewOpen(false);
-      setResultsOpen(true);
       setSelected(new Set());
+      for (const row of successes) invalidateAfterEndUserDetailMutation(row.account);
       dispatchBillingHeaderStatsRefresh();
-      toastBulkRenewSummary(res.results);
+      if (successes.length > 0 && selectedOption && bulkRenewAvailability) {
+        setBulkRenewSuccess(
+          buildBulkRenewSuccessDetails({
+            selectedOption,
+            wallets: bulkRenewAvailability.wallets,
+            successAccounts: successes.map((r) => r.account),
+            accountWalletMap: bulkRenewAvailability.accountWalletMap,
+          }),
+        );
+      }
+      if (failures.length > 0) {
+        if (successes.length === 0) setResultsOpen(true);
+        toastBulkRenewSummary(res.results);
+      } else if (successes.length === 0) {
+        setResultsOpen(true);
+        toastBulkRenewSummary(res.results);
+      }
     });
   }
 
@@ -396,53 +468,27 @@ export function PortalUsersTableWithBulkRenew({
       </div>
 
       {renewOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
-          <div className="max-h-[90vh] w-full max-w-md overflow-auto rounded-xl border border-border/60 bg-card p-5 shadow-lg">
-            <h2 className="text-lg font-semibold text-foreground">Bulk renew</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{selected.size} account(s) will be renewed.</p>
-            <label id="portal-bulk-renew-validity" className="mt-4 block text-sm font-semibold text-foreground">
-              Validity
-            </label>
-            {walletLoading ? (
-              <p className="mt-1 text-sm text-muted-foreground">Loading wallet balance…</p>
-            ) : bulkRenewNoAffordable ? (
-              <p className="mt-1 rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-                No validity fits your current credit balance.
-              </p>
-            ) : (
-              <BulkRenewValiditySelect
-                value={validity}
-                onValueChange={setValidity}
-                options={bulkRenewValidityOptions}
-                labelledBy="portal-bulk-renew-validity"
-                triggerClassName="mt-1 w-full"
-              />
-            )}
-            {operatorDebitCredits != null && !walletLoading && bulkRenewValidityOptions.length > 0 ? (
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Showing periods up to {operatorDebitCredits} available credit{operatorDebitCredits === 1 ? "" : "s"}.
-              </p>
-            ) : null}
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                className="rounded-lg border border-input px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/50"
-                onClick={() => setRenewOpen(false)}
-                disabled={pending}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-                onClick={runBulkRenew}
-                disabled={pending || walletLoading || bulkRenewNoAffordable}
-              >
-                {pending ? "Working…" : "Submit"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <BulkRenewAccountsModal
+          open
+          onClose={() => setRenewOpen(false)}
+          selectedCount={selected.size}
+          validityOptions={validityOptions}
+          availability={bulkRenewAvailability}
+          loading={walletLoading}
+          validity={validity}
+          onValidityChange={setValidity}
+          pending={pending}
+          onSubmit={runBulkRenew}
+          title="Bulk renew"
+        />
+      ) : null}
+
+      {bulkRenewSuccess ? (
+        <SubscriberRenewRecoverSuccessModal
+          open
+          details={bulkRenewSuccess}
+          onDismiss={dismissBulkRenewSuccess}
+        />
       ) : null}
 
       <BulkUpdateResultsModal

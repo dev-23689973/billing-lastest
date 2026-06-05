@@ -61,7 +61,10 @@ import {
 import type { SubscribersExportFilters } from "@/lib/server/subscribersExportClientData";
 import { apiBaseToModalScope } from "@/lib/modalScope";
 import { cachedDataLoad, dataCacheKey, DATA_CACHE_NS, BILLING_DATA_CACHE_INVALIDATE, getDataCache, setDataCache } from "@/lib/client/dataCache";
-import { invalidateAfterEndUserDetailMutation } from "@/lib/client/invalidateAfterBillingMutation";
+import {
+  invalidateAfterEndUserDetailMutation,
+  invalidateAfterEndUserMutation,
+} from "@/lib/client/invalidateAfterBillingMutation";
 import { dispatchBillingHeaderStatsRefresh } from "@/lib/realtime/client-events";
 import type { SubscribersTablePortal } from "@/lib/subscribersPortalTable";
 import { ADMIN_SUBSCRIBERS_PORTAL } from "@/lib/subscribersPortalTable";
@@ -83,11 +86,16 @@ import {
   SubscriberStalkerUserIdCell,
 } from "@/components/admin/SubscriberTableIdentityCells";
 import { SubscriberStateCell } from "@/components/admin/SubscriberStateCell";
+import { BulkRenewAccountsModal } from "@/components/subscribers/BulkRenewAccountsModal";
+import { SubscriberRenewRecoverSuccessModal } from "@/components/subscribers/SubscriberRenewRecoverSuccessModal";
 import {
+  aggregateBulkRenewAvailability,
+  buildBulkRenewSuccessDetails,
   clampValiditySelection,
-  filterValidityOptionsByDebitCredits,
-  validityOptionChargedCredits,
-} from "@/lib/validityOptions";
+  filterBulkRenewValidityOptions,
+  type BulkRenewAvailabilitySnapshot,
+} from "@/lib/bulkRenewPlanning";
+import type { SubscriberRenewRecoverSuccessDetails } from "@/lib/subscriberRenewRecoverSuccess";
 import {
   adminListTableBulkMenuItemClass,
   adminListTableBulkMenuItemDestructiveClass,
@@ -114,8 +122,6 @@ import { embeddedTableTdClass, embeddedTableThClass } from "@/lib/ui/embeddedTab
 import { responsiveTableColumnHeader } from "@/lib/ui/responsiveTableColumnHeader";
 import type { SubscriberListClientRow } from "@/lib/dto/subscribers";
 import { DataTableSelectionCheckbox } from "@/components/ui/DataTableSelectionCheckbox";
-import { BulkRenewValiditySelect } from "@/components/admin/BulkRenewValiditySelect";
-import { renewPreviewFmt } from "@/components/admin/RenewAccountPreviewPanel";
 import { AdminUsersStatusControl } from "@/components/admin/AdminUsersStatusControl";
 import { AdminUsersAutoRenewControl } from "@/components/admin/AdminUsersAutoRenewControl";
 import { AdminUsersPerPageControl } from "@/components/admin/AdminUsersPerPageControl";
@@ -178,16 +184,6 @@ const BulkUpdateResultsModal = dynamic(
 
 const AdminSendMessageModal = dynamic(
   () => import("@/components/admin/AdminSendMessageModal").then((m) => m.AdminSendMessageModal),
-  { ssr: false },
-);
-
-const RenewAccountModalFrame = dynamic(
-  () => import("@/components/admin/RenewAccountModalFrame").then((m) => m.RenewAccountModalFrame),
-  { ssr: false },
-);
-
-const RenewAccountPreviewPanel = dynamic(
-  () => import("@/components/admin/RenewAccountPreviewPanel").then((m) => m.RenewAccountPreviewPanel),
   { ssr: false },
 );
 
@@ -411,14 +407,9 @@ export function AdminSubscribersTable({
   const [messageOpen, setMessageOpen] = useState(false);
   const [resultsOpen, setResultsOpen] = useState(false);
   const [validity, setValidity] = useState("1");
-  const [bulkRenewAvailability, setBulkRenewAvailability] = useState<{
-    debitUsername: string | null;
-    debitCredits: number | null;
-    walletCount: number;
-    accountCount: number;
-    resolvedCount: number;
-  } | null>(null);
+  const [bulkRenewAvailability, setBulkRenewAvailability] = useState<BulkRenewAvailabilitySnapshot | null>(null);
   const [bulkRenewAvailabilityLoading, setBulkRenewAvailabilityLoading] = useState(false);
+  const [bulkRenewSuccess, setBulkRenewSuccess] = useState<SubscriberRenewRecoverSuccessDetails | null>(null);
   const [bulkMessage, setBulkMessage] = useState("");
   const [results, setResults] = useState<{ account: string; ok: boolean; message: string }[]>([]);
   const [detailRow, setDetailRow] = useState<SubscriberListClientRow | null>(null);
@@ -553,33 +544,39 @@ export function AdminSubscribersTable({
     const loadAvailability = isOperatorPortal
       ? getPortalAccountRenewRecoveryAvailabilityAction
       : getAccountRenewRecoveryAvailabilityAction;
-    void Promise.all(ids.map((id) => loadAvailability(id)))
+    void Promise.all(
+      ids.map(async (account) => {
+        const res = await loadAvailability(account);
+        return { account, res };
+      }),
+    )
       .then((rows) => {
-        const okRows = rows.filter((r) => r.ok);
-        const debitRows = okRows.filter((r) => typeof r.debitCredits === "number");
-        const minDebit =
-          debitRows.length > 0
-            ? Math.min(...debitRows.map((r) => Number(r.debitCredits ?? 0)))
-            : null;
-        const walletOwners = new Set(
-          okRows
-            .map((r) => String(r.debitUsername ?? "").trim())
-            .filter((v) => v.length > 0),
+        setBulkRenewAvailability(
+          aggregateBulkRenewAvailability(
+            ids.length,
+            rows.map(({ account, res }) => ({
+              account,
+              ok: res.ok,
+              debitUsername: res.ok ? res.debitUsername : null,
+              debitCredits: res.ok ? res.debitCredits : null,
+            })),
+          ),
         );
-        setBulkRenewAvailability({
-          debitUsername: ids.length === 1 ? (okRows[0]?.debitUsername ?? null) : null,
-          debitCredits: minDebit,
-          walletCount: walletOwners.size,
-          accountCount: ids.length,
-          resolvedCount: okRows.length,
-        });
       })
       .finally(() => setBulkRenewAvailabilityLoading(false));
     setRenewOpen(true);
   }
 
+  function dismissBulkRenewSuccess() {
+    setBulkRenewSuccess(null);
+    if (results.length > 0) setResultsOpen(true);
+  }
+
   function runBulkRenew() {
     const ids = Array.from(selected);
+    const wallets = bulkRenewAvailability?.wallets ?? [];
+    const affordableOptions = filterBulkRenewValidityOptions(validityOptions, wallets);
+    const selectedOption = affordableOptions.find((v) => v.value === validity);
     startTransition(async () => {
       const res = isOperatorPortal
         ? await bulkRenewPortalAccountsAction(ids, validity)
@@ -588,17 +585,36 @@ export function AdminSubscribersTable({
         toast.error(res.error === "no_accounts" ? "Select at least one account." : res.error);
         return;
       }
-      setResults(res.results);
+      const successes = res.results.filter((r) => r.ok);
+      const failures = res.results.filter((r) => !r.ok);
+      setResults(failures.length > 0 ? res.results : []);
       setRenewOpen(false);
-      setResultsOpen(true);
       setSelected(new Set());
-      toastBulkRenewSummary(res.results);
+      for (const row of successes) invalidateAfterEndUserMutation(row.account);
+      dispatchBillingHeaderStatsRefresh();
+      if (successes.length > 0 && selectedOption && bulkRenewAvailability) {
+        setBulkRenewSuccess(
+          buildBulkRenewSuccessDetails({
+            selectedOption,
+            wallets: bulkRenewAvailability.wallets,
+            successAccounts: successes.map((r) => r.account),
+            accountWalletMap: bulkRenewAvailability.accountWalletMap,
+          }),
+        );
+      }
+      if (failures.length > 0) {
+        if (successes.length === 0) setResultsOpen(true);
+        toastBulkRenewSummary(res.results);
+      } else if (successes.length === 0) {
+        setResultsOpen(true);
+        toastBulkRenewSummary(res.results);
+      }
     });
   }
 
   const bulkRenewValidityOptions = useMemo(
-    () => filterValidityOptionsByDebitCredits(validityOptions, bulkRenewAvailability?.debitCredits),
-    [validityOptions, bulkRenewAvailability?.debitCredits],
+    () => filterBulkRenewValidityOptions(validityOptions, bulkRenewAvailability?.wallets ?? []),
+    [validityOptions, bulkRenewAvailability?.wallets],
   );
 
   useEffect(() => {
@@ -609,28 +625,6 @@ export function AdminSubscribersTable({
     );
     return () => window.clearTimeout(timer);
   }, [renewOpen, bulkRenewValidityOptions]);
-
-  const bulkRenewNoAffordable =
-    renewOpen && !bulkRenewAvailabilityLoading && bulkRenewValidityOptions.length === 0;
-
-  const selectedValidity = bulkRenewValidityOptions.find((v) => v.value === validity);
-  const renewMonths = Number.parseInt(validity, 10);
-  const perAccountCharge =
-    validity === "FREE_TRIAL"
-      ? 0
-      : selectedValidity
-        ? validityOptionChargedCredits(selectedValidity)
-        : Number.isFinite(renewMonths)
-          ? renewMonths
-          : 0;
-  const totalCharge = Math.max(0, selected.size) * Math.max(0, perAccountCharge);
-  const renewCurrentAvailable = bulkRenewAvailability?.debitCredits ?? null;
-  const renewAfterAvailable =
-    renewCurrentAvailable != null && Number.isFinite(totalCharge) ? renewCurrentAvailable - totalCharge : null;
-  const availabilityPartial =
-    !!bulkRenewAvailability &&
-    bulkRenewAvailability.accountCount > 1 &&
-    bulkRenewAvailability.resolvedCount < bulkRenewAvailability.accountCount;
 
   function openDeleteModal() {
     if (selected.size === 0) {
@@ -2414,111 +2408,25 @@ export function AdminSubscribersTable({
       ) : null}
 
       {renewOpen ? (
-        <RenewAccountModalFrame
+        <BulkRenewAccountsModal
+          open
           onClose={() => setRenewOpen(false)}
-          title="Renew selected accounts"
-          subtitle={
-            <>
-              <span className="font-semibold text-foreground">{selected.size}</span> account
-              {selected.size === 1 ? "" : "s"} selected
-            </>
-          }
-          stats={
-            <RenewAccountPreviewPanel
-              loading={bulkRenewAvailabilityLoading}
-              rows={[
-                {
-                  label: "Accounts selected",
-                  value: String(selected.size),
-                },
-                {
-                  label: "Current available (debit wallet)",
-                  value:
-                    selected.size === 1
-                      ? renewCurrentAvailable != null
-                        ? renewPreviewFmt(renewCurrentAvailable)
-                        : "—"
-                      : "Multiple wallets",
-                },
-                {
-                  label: "Charged per account",
-                  value: renewPreviewFmt(perAccountCharge),
-                },
-                {
-                  label: "After available",
-                  value: renewAfterAvailable != null ? renewPreviewFmt(renewAfterAvailable) : "—",
-                  highlight: true,
-                },
-              ]}
-              footer={
-                selected.size === 1 ? (
-                  bulkRenewAvailability?.debitUsername ? (
-                    <>
-                      Debit wallet owner:{" "}
-                      <span className="font-semibold text-foreground">{bulkRenewAvailability.debitUsername}</span>
-                    </>
-                  ) : undefined
-                ) : availabilityPartial ? (
-                  <>
-                    Estimated from{" "}
-                    <span className="font-semibold text-foreground">
-                      {bulkRenewAvailability?.resolvedCount ?? 0}/{bulkRenewAvailability?.accountCount ?? selected.size}
-                    </span>{" "}
-                    accounts across {bulkRenewAvailability?.walletCount ?? 0} wallet(s).
-                  </>
-                ) : (
-                  <>
-                    Aggregated preview across{" "}
-                    <span className="font-semibold text-foreground">{bulkRenewAvailability?.walletCount ?? 0}</span>{" "}
-                    wallet(s).
-                  </>
-                )
-              }
-            />
-          }
-          validitySection={
-            <>
-              <label
-                id="admin-bulk-renew-validity"
-                className="mb-1.5 block text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"
-              >
-                Select validity
-              </label>
-              {bulkRenewNoAffordable ? (
-                <p className="rounded-lg border border-border/60 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-                  No validity fits the lowest debit wallet balance among selected accounts.
-                </p>
-              ) : (
-                <BulkRenewValiditySelect
-                  value={validity}
-                  onValueChange={setValidity}
-                  options={bulkRenewValidityOptions}
-                  labelledBy="admin-bulk-renew-validity"
-                  triggerClassName="w-full"
-                  size="compact"
-                />
-              )}
-              <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
-                {bulkRenewAvailability?.debitCredits != null
-                  ? `Showing periods affordable for the lowest wallet balance (${bulkRenewAvailability.debitCredits} credit${bulkRenewAvailability.debitCredits === 1 ? "" : "s"}).`
-                  : "Renewal applies immediately to all selected accounts."}
-              </p>
-            </>
-          }
-          footer={
-            <Button
-              type="button"
-              variant="ctaLink"
-              size="inline"
-              className="h-9 gap-1 text-sm"
-              onClick={runBulkRenew}
-              disabled={pending || bulkRenewNoAffordable}
-            >
-              {pending ? "Working…" : "Submit"}
-              {!pending ? <ArrowUpRight className="h-4 w-4" aria-hidden="true" /> : null}
-            </Button>
-          }
-          zClass="z-50"
+          selectedCount={selected.size}
+          validityOptions={validityOptions}
+          availability={bulkRenewAvailability}
+          loading={bulkRenewAvailabilityLoading}
+          validity={validity}
+          onValidityChange={setValidity}
+          pending={pending}
+          onSubmit={runBulkRenew}
+        />
+      ) : null}
+
+      {bulkRenewSuccess ? (
+        <SubscriberRenewRecoverSuccessModal
+          open
+          details={bulkRenewSuccess}
+          onDismiss={dismissBulkRenewSuccess}
         />
       ) : null}
 

@@ -104,24 +104,47 @@ function SuccessSummary({ details }: { details: SubscriberRenewRecoverSuccessDet
         ) : null}
       </div>
 
-      <div className="border-t border-border/50 bg-muted/20 px-3.5 py-3.5 dark:bg-white/[0.04]">
-        <p className={cn(rsTextCaption, "text-center text-muted-foreground")}>
-          {walletChanged ? "Updated wallet balance" : "Wallet balance"}
-        </p>
-        {walletChanged ? (
-          <div className="mt-2 flex items-center justify-center gap-2 sm:gap-2.5">
-            <span className={cn(monoNum, "text-sm text-muted-foreground")}>{formatCreditsInt(details.walletBefore)}</span>
-            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
-            <span className={cn(monoNum, "text-xl font-semibold text-emerald-700 dark:text-emerald-300")}>
-              {formatCreditsInt(details.walletAfter)}
-            </span>
-          </div>
-        ) : (
-          <p className={cn("mt-1.5 text-center text-xl font-semibold text-foreground", monoNum)}>
-            {formatCreditsInt(details.walletAfter)}
+      {details.bulkWalletRows && details.bulkWalletRows.length > 1 ? (
+        <div className="divide-y divide-border/40 border-t border-border/50">
+          {details.bulkWalletRows.map((row) => (
+            <div key={row.debitUsername} className="px-3.5 py-2.5">
+              <p className={cn(rsTextCaption, "font-medium text-foreground")}>
+                {row.debitUsername}{" "}
+                <span className="font-normal text-muted-foreground">({row.accountCount} renewed)</span>
+              </p>
+              <div className="mt-1.5 flex items-center justify-between gap-3">
+                <span className={cn(rsTextCaption, "text-muted-foreground")}>Wallet</span>
+                <div className="flex items-center gap-2">
+                  <span className={cn(monoNum, "text-xs text-muted-foreground")}>{formatCreditsInt(row.walletBefore)}</span>
+                  <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground/70" aria-hidden />
+                  <span className={cn(monoNum, "text-sm font-semibold text-emerald-700 dark:text-emerald-300")}>
+                    {formatCreditsInt(row.walletAfter)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="border-t border-border/50 bg-muted/20 px-3.5 py-3.5 dark:bg-white/[0.04]">
+          <p className={cn(rsTextCaption, "text-center text-muted-foreground")}>
+            {walletChanged ? "Updated wallet balance" : "Wallet balance"}
           </p>
-        )}
-      </div>
+          {walletChanged ? (
+            <div className="mt-2 flex items-center justify-center gap-2 sm:gap-2.5">
+              <span className={cn(monoNum, "text-sm text-muted-foreground")}>{formatCreditsInt(details.walletBefore)}</span>
+              <ArrowRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" aria-hidden />
+              <span className={cn(monoNum, "text-xl font-semibold text-emerald-700 dark:text-emerald-300")}>
+                {formatCreditsInt(details.walletAfter)}
+              </span>
+            </div>
+          ) : (
+            <p className={cn("mt-1.5 text-center text-xl font-semibold text-foreground", monoNum)}>
+              {formatCreditsInt(details.walletAfter)}
+            </p>
+          )}
+        </div>
+      )}
 
       {expiryChanged ? (
         <div className="border-t border-border/50 px-3.5 py-3">

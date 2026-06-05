@@ -6773,6 +6773,9 @@ export async function bulkRenewAccountsByOperator(input: {
   );
   const chargedForValidity = needsCreditCheck ? monthRenewChargedCredits(validityInt, deductionMap) : 0;
 
+  type AdminBulkEntry = { account: string; debitUsername: string };
+  const entries: AdminBulkEntry[] = [];
+
   for (const account of unique) {
     const [accRows] = await pool.execute<RowDataPacket[]>("SELECT username FROM accounts WHERE account = :a LIMIT 1", { a: account });
     if (!accRows.length) {
@@ -6783,32 +6786,50 @@ export async function bulkRenewAccountsByOperator(input: {
       });
       continue;
     }
-    const ownerUsername = String(accRows[0].username ?? "");
+    entries.push({ account, debitUsername: String(accRows[0].username ?? "").trim() });
+  }
 
-    if (needsCreditCheck) {
-      const balance = await getCreditBalance(ownerUsername);
-      if (balance < chargedForValidity) {
-        out.push({
-          account,
-          ok: false,
-          message: `Account ${account} cannot add ${validityTrim} because ${ownerUsername} does not have enough credits (remaining: ${balance}, required: ${chargedForValidity}).`,
-        });
+  const byWallet = new Map<string, string[]>();
+  for (const entry of entries) {
+    const wallet = entry.debitUsername || "—";
+    const group = byWallet.get(wallet) ?? [];
+    group.push(entry.account);
+    byWallet.set(wallet, group);
+  }
+
+  for (const [debitUsername, walletAccounts] of byWallet) {
+    const walletCount = walletAccounts.length;
+    const walletRequired = needsCreditCheck ? chargedForValidity * walletCount : 0;
+    const needsWalletGate = needsCreditCheck || isFreeTrial;
+
+    if (needsWalletGate) {
+      const balance = await getCreditBalance(debitUsername);
+      const affordable = isFreeTrial ? balance > 0 : balance >= walletRequired;
+      if (!affordable) {
+        const skipMessage = isFreeTrial
+          ? `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — no credits remaining.`
+          : `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — insufficient credits (balance: ${balance}, required: ${walletRequired} for ${validityTrim}).`;
+        for (const account of walletAccounts) {
+          out.push({ account, ok: false, message: skipMessage });
+        }
         continue;
       }
     }
 
-    await creditSummarizeBeforeUpdate(account);
+    for (const account of walletAccounts) {
+      await creditSummarizeBeforeUpdate(account);
 
-    const r = await renewAccountByOperatorValidity({ account, validity: validityForRenew });
-    if (!r.ok) {
-      out.push({ account, ok: false, message: bulkRenewFailureMessage(account, validityTrim, r) });
-      continue;
+      const r = await renewAccountByOperatorValidity({ account, validity: validityForRenew });
+      if (!r.ok) {
+        out.push({ account, ok: false, message: bulkRenewFailureMessage(account, validityTrim, r) });
+        continue;
+      }
+      out.push({
+        account,
+        ok: true,
+        message: `Success: ${validityTrim} applied to account ${account}.`,
+      });
     }
-    out.push({
-      account,
-      ok: true,
-      message: `Success: ${validityTrim} applied to account ${account}.`,
-    });
   }
 
   return out;
@@ -6853,6 +6874,9 @@ export async function bulkRenewPortalAccountsByOperator(input: {
   );
   const chargedPerRenew = isFreeTrial ? 0 : monthRenewChargedCredits(validityInt, deductionMap);
 
+  type PortalBulkEntry = { account: string; debitUsername: string };
+  const entries: PortalBulkEntry[] = [];
+
   for (const account of unique) {
     const inScope = await canAccessAccountByRole({
       ownerType: input.ownerType,
@@ -6868,43 +6892,57 @@ export async function bulkRenewPortalAccountsByOperator(input: {
       continue;
     }
 
-    const debitUser =
+    const debitUsername =
       input.ownerType === "MNGR" || input.ownerType === "SRSLR"
         ? (await getSubscriberAccountOwnerUsername(account)) ?? ""
         : portalDebitUser;
-    if (!debitUser) {
+    if (!debitUsername) {
       out.push({ account, ok: false, message: `Account ${account} cannot be processed (missing dealer owner).` });
       continue;
     }
+    entries.push({ account, debitUsername });
+  }
 
-    const balance = await getCreditBalance(debitUser);
-    if (balance < chargedPerRenew) {
-      out.push({
-        account: "—",
-        ok: false,
-        message:
-          chargedPerRenew === 0
-            ? `Bulk renew stopped: ${debitUser} has no credits remaining.`
-            : `Bulk renew stopped: ${debitUser} has insufficient credits (remaining: ${balance}, required: ${chargedPerRenew} for ${validityTrim}).`,
-      });
-      break;
-    }
+  const byWallet = new Map<string, string[]>();
+  for (const entry of entries) {
+    const group = byWallet.get(entry.debitUsername) ?? [];
+    group.push(entry.account);
+    byWallet.set(entry.debitUsername, group);
+  }
 
-    await creditSummarizeBeforeUpdate(account);
-    const r = await renewAccountByOperatorValidity({
-      account,
-      validity: isFreeTrial ? "FREE_TRIAL" : validityTrim,
-      debitUsername: debitUser,
-    });
-    if (!r.ok) {
-      out.push({ account, ok: false, message: bulkRenewFailureMessage(account, validityTrim, r) });
+  for (const [debitUsername, walletAccounts] of byWallet) {
+    const walletCount = walletAccounts.length;
+    const walletRequired = isFreeTrial ? 0 : chargedPerRenew * walletCount;
+    const balance = await getCreditBalance(debitUsername);
+    const affordable = isFreeTrial ? balance > 0 : balance >= walletRequired;
+
+    if (!affordable) {
+      const skipMessage = isFreeTrial
+        ? `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — no credits remaining.`
+        : `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — insufficient credits (balance: ${balance}, required: ${walletRequired} for ${validityTrim}).`;
+      for (const account of walletAccounts) {
+        out.push({ account, ok: false, message: skipMessage });
+      }
       continue;
     }
-    out.push({
-      account,
-      ok: true,
-      message: `Success: ${validityTrim} applied to account ${account}.`,
-    });
+
+    for (const account of walletAccounts) {
+      await creditSummarizeBeforeUpdate(account);
+      const r = await renewAccountByOperatorValidity({
+        account,
+        validity: isFreeTrial ? "FREE_TRIAL" : validityTrim,
+        debitUsername,
+      });
+      if (!r.ok) {
+        out.push({ account, ok: false, message: bulkRenewFailureMessage(account, validityTrim, r) });
+        continue;
+      }
+      out.push({
+        account,
+        ok: true,
+        message: `Success: ${validityTrim} applied to account ${account}.`,
+      });
+    }
   }
 
   return out;
@@ -7542,6 +7580,7 @@ export async function renewAccountByOperatorMonths(input: {
     }
 
     await conn.commit();
+    bustWalletDashboardCacheAfterCreditMutation();
   } catch {
     await conn.rollback();
     conn.release();
