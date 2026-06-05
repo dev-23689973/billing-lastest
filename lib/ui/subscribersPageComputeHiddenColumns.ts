@@ -9,7 +9,7 @@ export const SUBSCRIBERS_PAGE_COLUMN_MIN_WIDTH_REM: Record<string, number> = {
   state: 9,
   created: 6.5,
   expiry: 7,
-  autoRenew: 4.5,
+  autoRenew: 9.5,
 };
 
 export const SUBSCRIBERS_PAGE_PINNED_COLUMN_IDS = new Set<string>(["account"]);

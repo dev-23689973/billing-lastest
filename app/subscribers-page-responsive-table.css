@@ -58,7 +58,7 @@
 .subscribers-page-col-state { min-width: 9rem; max-width: 14rem; }
 .subscribers-page-col-created { min-width: 6.5rem; }
 .subscribers-page-col-expiry { min-width: 7rem; }
-.subscribers-page-col-autoRenew { min-width: 4.5rem; }
+.subscribers-page-col-autoRenew { min-width: 9.5rem; }
 
 .subscribers-page-col-fill {
   width: 100%;
@@ -218,6 +218,10 @@
   background-size: 6px 3px;
   background-repeat: repeat-x;
   background-position: 0 100%;
+}
+
+.subscribers-page-detail-field[data-detail-id="autoRenew"] .subscribers-page-detail-value {
+  align-items: center;
 }
 
 .subscribers-page-detail-value {

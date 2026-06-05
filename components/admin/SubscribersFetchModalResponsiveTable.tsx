@@ -19,6 +19,7 @@ import {
   SubscriberExpiryTableCell,
   subscriptionPill,
 } from "@/components/admin/subscribersPageFormatters";
+import { SubscriberAutoRenewCell } from "@/components/subscribers/SubscriberAutoRenewCell";
 import {
   subscribersPageActionsHeaderCell,
   subscribersPageCellAlign,
@@ -255,11 +256,15 @@ function SubscribersFetchModalTable({
                     </td>
                   ) : null}
                   {hasColumn("autoRenew") ? (
-                    <td className={dataTd("autoRenew", "text-center text-muted-foreground tabular-nums")}>
-                      <span className="lg:hidden">{r.autoRenew == null ? "—" : r.autoRenew ? "Y" : "N"}</span>
-                      <span className="hidden lg:inline">
-                        {r.autoRenew == null ? "—" : r.autoRenew ? "Yes" : "No"}
-                      </span>
+                    <td className={dataTd("autoRenew", "align-middle text-center")}>
+                      <div className="flex justify-center">
+                        <SubscriberAutoRenewCell
+                          account={r.account}
+                          expires={r.expires}
+                          autoRenew={r.autoRenew}
+                          autoRenewCyclesRemaining={r.autoRenewCyclesRemaining}
+                        />
+                      </div>
                     </td>
                   ) : null}
                 </SubscribersPageExpandableRow>

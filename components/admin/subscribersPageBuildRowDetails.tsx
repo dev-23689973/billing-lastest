@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { SubscriberStateCell } from "@/components/admin/SubscriberStateCell";
 import { SubscriberParentsCell } from "@/components/admin/SubscriberParentsCell";
+import { SubscriberAutoRenewCell } from "@/components/subscribers/SubscriberAutoRenewCell";
 import { SubscriberSubscriptionStatusCard } from "@/components/subscribers/SubscriberSubscriptionStatusCard";
 import type { SubscribersPageDetailItem } from "@/components/admin/SubscribersPageHiddenDetailsPanel";
 import {
@@ -20,6 +21,11 @@ import {
 import { SUBSCRIBERS_PAGE_RESPONSIVE_HIDE_COLUMN_IDS } from "@/lib/ui/subscribersPageResponsiveTable";
 
 export type SubscribersPageColumnKey = SubscribersUserColumnKey;
+
+export type SubscribersPageAutoRenewHandlers = {
+  onConfigure: () => void;
+  onDisable: (account: string) => Promise<{ ok: boolean; message?: string }>;
+};
 
 export const SUBSCRIBERS_PAGE_COLUMN_LABELS = SUBSCRIBERS_USER_COLUMN_LABELS;
 
@@ -66,6 +72,7 @@ function renderDetailValue(
   col: SubscribersPageColumnKey,
   row: SubscriberListClientRow,
   showUserIdColumn: boolean,
+  autoRenewHandlers?: SubscribersPageAutoRenewHandlers,
 ): ReactNode {
   switch (col) {
     case "account": {
@@ -92,7 +99,16 @@ function renderDetailValue(
     case "parents":
       return subscriberBillingOwner(row)?.login ?? "—";
     case "autoRenew":
-      return row.autoRenew == null ? "—" : row.autoRenew ? "Yes" : "No";
+      return (
+        <SubscriberAutoRenewCell
+          account={row.account}
+          expires={row.expires}
+          autoRenew={row.autoRenew}
+          autoRenewCyclesRemaining={row.autoRenewCyclesRemaining}
+          onConfigure={autoRenewHandlers?.onConfigure}
+          onDisable={autoRenewHandlers?.onDisable}
+        />
+      );
     case "status": {
       const sub = subscriptionPill(row);
       return (
@@ -116,10 +132,11 @@ export function buildSubscribersPageRowDetailItems(
   row: SubscriberListClientRow,
   panelColumnIds: readonly SubscribersPageColumnKey[],
   showUserIdColumn = false,
+  autoRenewHandlers?: SubscribersPageAutoRenewHandlers,
 ): SubscribersPageDetailItem[] {
   return panelColumnIds.map((col) => ({
     columnId: col,
     label: SUBSCRIBERS_PAGE_COLUMN_LABELS[col],
-    value: renderDetailValue(col, row, showUserIdColumn),
+    value: renderDetailValue(col, row, showUserIdColumn, autoRenewHandlers),
   }));
 }

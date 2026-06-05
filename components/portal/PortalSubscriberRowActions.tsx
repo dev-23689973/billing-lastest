@@ -302,8 +302,12 @@ export function PortalSubscriberRowActions({
       {renewOpen ? (
       <SubscriberRenewAccountModal
         account={account}
+        displayName={displayName}
         open
         onClose={() => setRenewOpen(false)}
+        onAfterSuccess={() => {
+          invalidateAfterEndUserMutation(account);
+        }}
         validityOptions={validityOptions}
         loadAvailability={async () => {
           const res = await getPortalAccountRenewRecoveryAvailabilityAction(account);

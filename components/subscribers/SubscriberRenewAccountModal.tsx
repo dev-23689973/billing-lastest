@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { CalendarDays, Clock, CreditCard, X } from "lucide-react";
 import { toast } from "sonner";
 import { RenewPeriodSelect } from "@/components/subscribers/RenewPeriodSelect";
+import { SubscriberRenewRecoverSuccessModal } from "@/components/subscribers/SubscriberRenewRecoverSuccessModal";
 import {
   managersToolbarModalBackdropClass,
   managersToolbarModalOpaqueShellClass,
@@ -26,6 +27,10 @@ import {
   validityOptionChargedCredits,
   type ValidityOption,
 } from "@/lib/validityOptions";
+import {
+  buildSubscriberRenewSuccessDetails,
+  type SubscriberRenewRecoverSuccessDetails,
+} from "@/lib/subscriberRenewRecoverSuccess";
 
 export type SubscriberRenewAvailability = {
   expiresAt: string | null;
@@ -38,24 +43,29 @@ export type SubscriberRenewAvailability = {
 
 type Props = {
   account: string;
+  displayName?: string | null;
   open: boolean;
   onClose: () => void;
   validityOptions: ValidityOption[];
   loadAvailability: () => Promise<SubscriberRenewAvailability | null>;
   onSubmit: (validity: string) => Promise<{ ok: boolean; message?: string }>;
+  onAfterSuccess?: () => void;
 };
 
 export function SubscriberRenewAccountModal({
   account,
+  displayName,
   open,
   onClose,
   validityOptions,
   loadAvailability,
   onSubmit,
+  onAfterSuccess,
 }: Props) {
   const [validity, setValidity] = useState("1");
   const [availability, setAvailability] = useState<SubscriberRenewAvailability | null>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [successDetails, setSuccessDetails] = useState<SubscriberRenewRecoverSuccessDetails | null>(null);
   const [pending, startTransition] = useTransition();
 
   const debitBalance = availability?.debitCredits ?? null;
@@ -102,23 +112,53 @@ export function SubscriberRenewAccountModal({
     setValidity((prev) => clampValiditySelection(prev, renewValidityOptions));
   }, [open, availabilityLoading, renewValidityOptions]);
 
+  function dismissSuccess() {
+    setSuccessDetails(null);
+    onClose();
+    onAfterSuccess?.();
+  }
+
   function runSubmit() {
     if (noAffordableValidity || !selectedOption) {
       toast.warning("No renewal period fits the current debit wallet balance.");
       return;
     }
+    const walletBefore =
+      debitBalance != null && Number.isFinite(debitBalance) ? Math.max(0, Math.floor(debitBalance)) : 0;
     startTransition(async () => {
       const res = await onSubmit(validity);
       if (!res.ok) {
         toast.error(res.message || "Renew failed.");
         return;
       }
-      onClose();
-      toast.success("Account renewed successfully.");
+      setSuccessDetails(
+        buildSubscriberRenewSuccessDetails({
+          account,
+          displayName: displayName ?? undefined,
+          debitUsername: availability?.debitUsername,
+          walletBefore,
+          selectedOption,
+          expiryBefore: renewCurrentExpiry,
+          expiryAfter: renewAfterExpiry,
+        }),
+      );
     });
   }
 
-  if (!open || typeof document === "undefined") return null;
+  useEffect(() => {
+    if (open) return;
+    if (successDetails) return;
+    setValidity("1");
+    setAvailability(null);
+  }, [open, successDetails]);
+
+  if (typeof document === "undefined") return null;
+
+  if (successDetails) {
+    return <SubscriberRenewRecoverSuccessModal open details={successDetails} onDismiss={dismissSuccess} />;
+  }
+
+  if (!open) return null;
 
   const currentExpiryLabel = formatRenewExpiryDateShort(renewCurrentExpiry);
   const currentRelative = formatRelativeDayCountFromToday(renewCurrentExpiry);

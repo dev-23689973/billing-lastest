@@ -47,12 +47,18 @@ import {
 } from "@/lib/ui/floatingActionMenu";
 import { AdminAddUserModal } from "@/components/admin/AdminAddUserModal";
 import { RecoverCreditsModal } from "@/components/subscribers/RecoverCreditsModal";
+import { SubscriberRenewRecoverSuccessModal } from "@/components/subscribers/SubscriberRenewRecoverSuccessModal";
 import { SubscriberRenewAccountModal } from "@/components/subscribers/SubscriberRenewAccountModal";
 import { SubscriberSetAutoRenewModal } from "@/components/subscribers/SubscriberSetAutoRenewModal";
 import { HudRowActionConfirmModal } from "@/components/ui/HudRowActionConfirmModal";
 import { Button } from "@/components/ui/button";
 import { applyRecoverToExpiry, buildRecoverMonthOptions } from "@/lib/billing/subscriberRecoverPools";
 import { clampValiditySelection } from "@/lib/validityOptions";
+import { dispatchBillingHeaderStatsRefresh } from "@/lib/realtime/client-events";
+import {
+  buildSubscriberRecoverSuccessDetails,
+  type SubscriberRenewRecoverSuccessDetails,
+} from "@/lib/subscriberRenewRecoverSuccess";
 
 export function AdminSubscriberRowActions({
   account,
@@ -132,6 +138,7 @@ export function AdminSubscriberRowActions({
   const [resetOpen, setResetOpen] = useState(false);
   const [rebootOpen, setRebootOpen] = useState(false);
   const [recoverOpen, setRecoverOpen] = useState(false);
+  const [recoverSuccess, setRecoverSuccess] = useState<SubscriberRenewRecoverSuccessDetails | null>(null);
   const [recoverCreditMonths, setRecoverCreditMonths] = useState("0");
   const [recoverBonusMonths, setRecoverBonusMonths] = useState("0");
 
@@ -382,10 +389,29 @@ export function AdminSubscriberRowActions({
         toast.error("Recovery failed. Please try again.");
         return;
       }
-      setRecoverOpen(false);
+      setRecoverSuccess(
+        buildSubscriberRecoverSuccessDetails({
+          account,
+          displayName: displayName ?? undefined,
+          debitUsername: availability?.debitUsername,
+          walletBefore:
+            availability?.debitCredits != null && Number.isFinite(availability.debitCredits)
+              ? Math.max(0, Math.floor(availability.debitCredits))
+              : 0,
+          creditMonths,
+          bonusMonths,
+          expiryBefore: recoverCurrentExpiry,
+          expiryAfter: recoverAfterExpiry,
+        }),
+      );
       invalidateAfterEndUserMutation(account);
-      toast.success("Credits recovered successfully.");
+      dispatchBillingHeaderStatsRefresh();
     });
+  }
+
+  function dismissRecoverSuccess() {
+    setRecoverSuccess(null);
+    setRecoverOpen(false);
   }
 
   function runRebootDevice() {
@@ -577,8 +603,10 @@ export function AdminSubscriberRowActions({
       {renewOpen ? (
       <SubscriberRenewAccountModal
         account={account}
+        displayName={displayName}
         open
         onClose={() => setRenewOpen(false)}
+        onAfterSuccess={dispatchBillingHeaderStatsRefresh}
         validityOptions={validityOptions}
         loadAvailability={async () => {
           const res = isOperatorPortal
@@ -634,7 +662,7 @@ export function AdminSubscriberRowActions({
       {recoverOpen ? (
         <RecoverCreditsModal
           account={account}
-          open
+          open={!recoverSuccess}
           onClose={() => setRecoverOpen(false)}
           loading={availabilityLoading}
           recoverCreditMonths={recoverCreditMonths}
@@ -654,6 +682,14 @@ export function AdminSubscriberRowActions({
           canSubmit={recoverCanSubmit}
           pending={recoverPending}
           onSubmit={runRecover}
+        />
+      ) : null}
+
+      {recoverSuccess ? (
+        <SubscriberRenewRecoverSuccessModal
+          open
+          details={recoverSuccess}
+          onDismiss={dismissRecoverSuccess}
         />
       ) : null}
 

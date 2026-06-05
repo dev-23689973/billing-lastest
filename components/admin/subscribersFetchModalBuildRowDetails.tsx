@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { StaffHubDetailItem } from "@/components/admin/StaffHubHiddenDetailsPanel";
+import { SubscriberAutoRenewCell } from "@/components/subscribers/SubscriberAutoRenewCell";
 import {
   DeviceCell,
   HierarchyCell,
@@ -100,7 +101,14 @@ function renderDetailValue(
     case "ip":
       return <span className="font-mono text-muted-foreground">{row.ip || "—"}</span>;
     case "autoRenew":
-      return row.autoRenew == null ? "—" : row.autoRenew ? "Yes" : "No";
+      return (
+        <SubscriberAutoRenewCell
+          account={row.account}
+          expires={row.expires}
+          autoRenew={row.autoRenew}
+          autoRenewCyclesRemaining={row.autoRenewCyclesRemaining}
+        />
+      );
     case "status":
       return <StatusBadge r={row} />;
     case "expires": {

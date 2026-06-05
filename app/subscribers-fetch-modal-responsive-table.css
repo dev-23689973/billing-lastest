@@ -42,7 +42,7 @@
 }
 .subscribers-fetch-modal-col-mac { min-width: 6.5rem; max-width: 9rem; overflow: hidden; text-overflow: ellipsis; }
 .subscribers-fetch-modal-col-ip { min-width: 4.5rem; }
-.subscribers-fetch-modal-col-autoRenew { min-width: 3.5rem; }
+.subscribers-fetch-modal-col-autoRenew { min-width: 9.5rem; }
 .subscribers-fetch-modal-col-status { min-width: 3.75rem; }
 .subscribers-fetch-modal-col-expires { min-width: 6rem; }
 .subscribers-fetch-modal-col-device { min-width: 6.5rem; }

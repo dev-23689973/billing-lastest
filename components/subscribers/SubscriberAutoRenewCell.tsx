@@ -22,38 +22,11 @@ type Props = {
 const disabledPillClass =
   "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full border border-slate-400/45 bg-slate-100/90 px-2.5 py-1 text-[10px] font-semibold leading-none text-slate-600 transition-colors hover:border-slate-500/55 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-500/45 dark:bg-slate-800/55 dark:text-slate-200 dark:hover:border-slate-400/60 dark:hover:bg-slate-700/70 dark:hover:text-white";
 
-const compactDisabledPillClass =
-  "inline-flex h-8 min-w-[2.35rem] shrink-0 cursor-pointer items-center justify-center rounded-full border border-slate-400/45 bg-slate-100/90 px-2 text-[10px] font-bold leading-none tracking-wide text-slate-600 transition-colors hover:border-slate-500/55 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-500/45 dark:bg-slate-800/55 dark:text-slate-200 dark:hover:border-slate-400/60 dark:hover:bg-slate-700/70 dark:hover:text-white";
-
 const enabledDateClass = "text-cyan-800 dark:text-cyan-200";
 const enabledPeriodClass = "text-emerald-700 dark:text-emerald-300";
 
 const enabledTextHoverClass =
   "rounded-md px-1.5 py-1 transition-colors hover:bg-muted/35 dark:hover:bg-muted/25";
-
-function SubscriberAutoRenewEnabledContent({
-  expires,
-  cyclesRemaining,
-  compact = false,
-}: {
-  expires: string | null;
-  cyclesRemaining: number;
-  compact?: boolean;
-}) {
-  const display = formatAutoRenewEnabledCellDisplay(expires, cyclesRemaining);
-  const textClass = compact ? "text-[9px] leading-tight" : rsTextCaption;
-
-  return (
-    <div className={cn("flex shrink-0 flex-col items-center text-center", enabledTextHoverClass)}>
-      <span className={cn(textClass, "font-semibold leading-none", enabledDateClass)}>
-        {display?.untilDateLabel ?? "—"}
-      </span>
-      <span className={cn(textClass, "mt-0.5 font-medium leading-none", enabledPeriodClass)}>
-        {display?.periodMonthsLabel ?? "—"}
-      </span>
-    </div>
-  );
-}
 
 function SubscriberAutoRenewEnabledCard({
   expires,
@@ -78,7 +51,14 @@ function SubscriberAutoRenewEnabledCard({
       className={cn("inline-flex w-fit max-w-full items-center gap-0.5 py-0.5", className)}
       title={title}
     >
-      <SubscriberAutoRenewEnabledContent expires={expires} cyclesRemaining={cyclesRemaining} />
+      <div className={cn("flex shrink-0 flex-col items-center text-center", enabledTextHoverClass)}>
+        <span className={cn(rsTextCaption, "font-semibold leading-none", enabledDateClass)}>
+          {display?.untilDateLabel ?? "—"}
+        </span>
+        <span className={cn(rsTextCaption, "mt-0.5 font-medium leading-none", enabledPeriodClass)}>
+          {display?.periodMonthsLabel ?? "—"}
+        </span>
+      </div>
       {onDisableClick ? (
         <button
           type="button"
@@ -96,53 +76,6 @@ function SubscriberAutoRenewEnabledCard({
           aria-label="Disable auto renewal"
         >
           <CircleOff className={rsIconSm} aria-hidden />
-        </button>
-      ) : null}
-    </div>
-  );
-}
-
-function SubscriberAutoRenewEnabledCompact({
-  expires,
-  cyclesRemaining,
-  disablePending,
-  onDisableClick,
-  className,
-}: {
-  expires: string | null;
-  cyclesRemaining: number;
-  disablePending: boolean;
-  onDisableClick?: () => void;
-  className?: string;
-}) {
-  const display = formatAutoRenewEnabledCellDisplay(expires, cyclesRemaining);
-  const title = display
-    ? `Auto renewal enabled until ${display.untilDateLabel} ${display.periodMonthsLabel}`
-    : "Auto renewal enabled";
-
-  return (
-    <div
-      className={cn("inline-flex w-fit max-w-full items-center justify-center gap-0.5 py-0.5", className)}
-      title={title}
-    >
-      <SubscriberAutoRenewEnabledContent expires={expires} cyclesRemaining={cyclesRemaining} compact />
-      {onDisableClick ? (
-        <button
-          type="button"
-          disabled={disablePending}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDisableClick();
-          }}
-          className={cn(
-            "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-rose-600 transition-colors",
-            "hover:bg-rose-500/12 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50",
-            "dark:text-rose-400 dark:hover:bg-rose-500/15 dark:hover:text-rose-300",
-          )}
-          title="Disable auto renewal"
-          aria-label="Disable auto renewal"
-        >
-          <CircleOff className="h-3.5 w-3.5" aria-hidden />
         </button>
       ) : null}
     </div>
@@ -170,30 +103,17 @@ export function SubscriberAutoRenewCell({
   if (currentAutoRenew !== true) {
     if (currentAutoRenew === false && onConfigure) {
       return (
-        <>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onConfigure();
-            }}
-            className={cn(compactDisabledPillClass, "lg:hidden", className)}
-            title="Set auto renewal"
-          >
-            Off
-          </button>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onConfigure();
-            }}
-            className={cn(disabledPillClass, "hidden lg:inline-flex", className)}
-            title="Set auto renewal"
-          >
-            Disabled
-          </button>
-        </>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onConfigure();
+          }}
+          className={cn(disabledPillClass, className)}
+          title="Set auto renewal"
+        >
+          Disabled
+        </button>
       );
     }
     return (
@@ -220,21 +140,12 @@ export function SubscriberAutoRenewCell({
   }
 
   return (
-    <>
-      <SubscriberAutoRenewEnabledCompact
-        expires={expires}
-        cyclesRemaining={cyclesRemaining}
-        disablePending={pending}
-        onDisableClick={onDisable ? handleDisable : undefined}
-        className={cn("lg:hidden", className)}
-      />
-      <SubscriberAutoRenewEnabledCard
-        expires={expires}
-        cyclesRemaining={cyclesRemaining}
-        disablePending={pending}
-        onDisableClick={onDisable ? handleDisable : undefined}
-        className={cn("hidden lg:inline-flex", className)}
-      />
-    </>
+    <SubscriberAutoRenewEnabledCard
+      expires={expires}
+      cyclesRemaining={cyclesRemaining}
+      disablePending={pending}
+      onDisableClick={onDisable ? handleDisable : undefined}
+      className={className}
+    />
   );
 }

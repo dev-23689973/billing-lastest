@@ -4,6 +4,7 @@ import { SubscribersPageHiddenDetailsPanel } from "@/components/admin/Subscriber
 import {
   buildSubscribersPageRowDetailItems,
   subscribersPageExpandPanelColumnIds,
+  type SubscribersPageAutoRenewHandlers,
   type SubscribersPageColumnKey,
 } from "@/components/admin/subscribersPageBuildRowDetails";
 import type { SubscriberListClientRow } from "@/lib/dto/subscribers";
@@ -13,15 +14,21 @@ type Props = {
   row: SubscriberListClientRow;
   visibleColumns: ReadonlySet<SubscribersPageColumnKey>;
   showUserIdColumn: boolean;
+  autoRenewHandlers?: SubscribersPageAutoRenewHandlers;
 };
 
-export function SubscribersPageRowDetailsPanel({ row, visibleColumns, showUserIdColumn }: Props) {
+export function SubscribersPageRowDetailsPanel({
+  row,
+  visibleColumns,
+  showUserIdColumn,
+  autoRenewHandlers,
+}: Props) {
   const { hiddenColumnIds } = useSubscribersPageTableContext();
   const panelColumnIds = subscribersPageExpandPanelColumnIds(
     visibleColumns,
     showUserIdColumn,
     hiddenColumnIds,
   );
-  const items = buildSubscribersPageRowDetailItems(row, panelColumnIds, showUserIdColumn);
+  const items = buildSubscribersPageRowDetailItems(row, panelColumnIds, showUserIdColumn, autoRenewHandlers);
   return <SubscribersPageHiddenDetailsPanel items={items} />;
 }

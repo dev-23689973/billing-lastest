@@ -1758,6 +1758,10 @@ export function AdminSubscribersTable({
                             row={r}
                             visibleColumns={visibleColumns as ReadonlySet<SubscribersPageColumnKey>}
                             showUserIdColumn={showUserIdColumn}
+                            autoRenewHandlers={{
+                              onConfigure: () => openAutoRenewForRow(r),
+                              onDisable: handleDisableAutoRenew,
+                            }}
                           />
                         }
                         rowClassName={adminEmbeddedListRowClass}
@@ -2201,8 +2205,13 @@ export function AdminSubscribersTable({
       {detailRow && detailRenewOpen ? (
         <SubscriberRenewAccountModal
           account={detailRow.account}
+          displayName={detailRow.full_name ?? detailRow.username ?? detailRow.account}
           open
           onClose={() => setDetailRenewOpen(false)}
+          onAfterSuccess={() => {
+            refreshDetailModal();
+            dispatchBillingHeaderStatsRefresh();
+          }}
           validityOptions={validityOptions}
           loadAvailability={async () => {
             const res = isOperatorPortal
@@ -2227,9 +2236,7 @@ export function AdminSubscribersTable({
                   autoRenewTotalCycles: 0,
                 });
             if (!res.ok) return { ok: false, message: res.message };
-            setDetailRenewOpen(false);
-            refreshDetailModal();
-            dispatchBillingHeaderStatsRefresh();
+            invalidateAfterEndUserDetailMutation(account);
             return { ok: true };
           }}
         />

@@ -6,7 +6,7 @@ export const SUBSCRIBERS_FETCH_MODAL_COLUMN_MIN_WIDTH_REM: Record<string, number
   package: 8,
   mac: 7,
   ip: 5,
-  autoRenew: 4.5,
+  autoRenew: 9.5,
   status: 4.5,
   expires: 8,
   device: 7.5,
