@@ -17,6 +17,7 @@ import { SubscriberSetAutoRenewModal } from "@/components/subscribers/Subscriber
 import { invalidateAfterEndUserDetailMutation } from "@/lib/client/invalidateAfterBillingMutation";
 import { toastBulkRenewSummary } from "@/lib/bulkRenewResultToast";
 import { PortalSubscriberRowActions } from "@/components/portal/PortalSubscriberRowActions";
+import { openAutoRenewConfigureOrWarn } from "@/lib/client/openAutoRenewConfigureOrWarn";
 import { isBillingAccountExpired } from "@/lib/billingAccountExpiry";
 import type { AccountListRow } from "@/lib/repos/billing";
 import { BulkUpdateResultsModal } from "@/components/admin/BulkUpdateResultsModal";
@@ -122,6 +123,7 @@ export function PortalUsersTableWithBulkRenew({
   const [autoRenewModalTarget, setAutoRenewModalTarget] = useState<{
     account: string;
     displayName?: string | null;
+    accountActive: boolean;
   } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -432,9 +434,15 @@ export function PortalUsersTableWithBulkRenew({
                             autoRenew={r.autoRenew}
                             autoRenewCyclesRemaining={r.autoRenewCyclesRemaining}
                             onConfigure={() =>
-                              setAutoRenewModalTarget({
-                                account: r.account,
-                                displayName: r.full_name ?? r.username ?? r.account,
+                              openAutoRenewConfigureOrWarn({
+                                subscriptionExpired,
+                                accountActive: r.status === 0,
+                                onOpen: () =>
+                                  setAutoRenewModalTarget({
+                                    account: r.account,
+                                    displayName: r.full_name ?? r.username ?? r.account,
+                                    accountActive: r.status === 0,
+                                  }),
                               })
                             }
                             onDisable={handleDisableAutoRenew}
@@ -503,6 +511,7 @@ export function PortalUsersTableWithBulkRenew({
         <SubscriberSetAutoRenewModal
           account={autoRenewModalTarget.account}
           displayName={autoRenewModalTarget.displayName ?? autoRenewModalTarget.account}
+          accountActive={autoRenewModalTarget.accountActive}
           open
           onClose={() => setAutoRenewModalTarget(null)}
           validityOptions={validityOptions}

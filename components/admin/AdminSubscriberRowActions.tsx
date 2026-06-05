@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { ArrowUpRight, Eye, HandCoins, Mail, MoreVertical, Pencil, Power, ReceiptText, Repeat, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { openAutoRenewConfigureOrWarn } from "@/lib/client/openAutoRenewConfigureOrWarn";
 import { operatorCopy } from "@/lib/operatorUiCopy";
 import {
   bulkDeleteAccountsAction,
@@ -65,6 +66,7 @@ export function AdminSubscriberRowActions({
   displayName,
   resetReturnPath,
   subscriptionExpired,
+  accountActive = true,
   validityOptions,
   recoverBonusEnabled = true,
   subscribersPortal = ADMIN_SUBSCRIBERS_PORTAL,
@@ -80,6 +82,7 @@ export function AdminSubscriberRowActions({
   displayName?: string | null;
   resetReturnPath: string;
   subscriptionExpired: boolean;
+  accountActive?: boolean;
   validityOptions: Array<{ value: string; label: string }>;
   recoverBonusEnabled?: boolean;
   subscribersPortal?: SubscribersTablePortal;
@@ -526,7 +529,11 @@ export function AdminSubscriberRowActions({
               className={floatingRowActionMenuItemClass}
               onClick={() => {
                 setOpen(false);
-                setAutoRenewOpen(true);
+                openAutoRenewConfigureOrWarn({
+                  subscriptionExpired,
+                  accountActive,
+                  onOpen: () => setAutoRenewOpen(true),
+                });
               }}
             >
               <Repeat className={floatingRowActionMenuIconClass} />
@@ -639,6 +646,7 @@ export function AdminSubscriberRowActions({
         <SubscriberSetAutoRenewModal
           account={account}
           displayName={displayName}
+          accountActive={accountActive}
           open
           onClose={() => setAutoRenewOpen(false)}
           validityOptions={validityOptions}

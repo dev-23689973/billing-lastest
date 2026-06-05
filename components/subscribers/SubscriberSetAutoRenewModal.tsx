@@ -14,11 +14,13 @@ import {
   autoRenewPeriodSelectionFromAccount,
   buildAutoRenewPeriodSelectOptions,
   clampAutoRenewPeriodSelection,
-  clampAutoRenewTotalCycles,
   formatAutoRenewUntilLabel,
+  formatAutoRenewUntilLabelFromTotal,
   formatAutoRenewUntilMonthYear,
+  getAutoRenewEnableBlockMessage,
   parseAutoRenewPeriodSelection,
 } from "@/lib/accountAutoRenew";
+import { isBillingAccountExpired } from "@/lib/billingAccountExpiry";
 import { cn } from "@/lib/cn";
 import { rsIconSm, rsTextBody, rsTextHeadingSm, rsTextKicker } from "@/lib/ui/responsiveScale";
 import type { ValidityOption } from "@/lib/validityOptions";
@@ -32,6 +34,8 @@ type Props = {
   validityOptions: ValidityOption[];
   loadAvailability: () => Promise<SubscriberRenewAvailability | null>;
   onSubmit: (period: string) => Promise<{ ok: boolean; message?: string }>;
+  /** When false and subscription is expired, enabling auto-renew is blocked. */
+  accountActive?: boolean;
 };
 
 export function SubscriberSetAutoRenewModal({
@@ -42,6 +46,7 @@ export function SubscriberSetAutoRenewModal({
   validityOptions,
   loadAvailability,
   onSubmit,
+  accountActive = true,
 }: Props) {
   const [availability, setAvailability] = useState<SubscriberRenewAvailability | null>(null);
   const [loading, setLoading] = useState(false);
@@ -65,10 +70,14 @@ export function SubscriberSetAutoRenewModal({
         formatAutoRenewUntilLabel(availability.expiresAt, availability.autoRenewCyclesRemaining ?? 0)
       : null;
 
+  const subscriptionExpired = availability?.expiresAt
+    ? isBillingAccountExpired(availability.expiresAt)
+    : false;
+  const enableBlockMessage = getAutoRenewEnableBlockMessage({ subscriptionExpired, accountActive });
+
   const previewUntilLabel = useMemo(() => {
     if (!availability?.expiresAt || isDisableSelection) return null;
-    const remaining = Math.max(0, parsed.totalCycles - 1);
-    return formatAutoRenewUntilLabel(availability.expiresAt, remaining);
+    return formatAutoRenewUntilLabelFromTotal(availability.expiresAt, parsed.totalCycles);
   }, [availability?.expiresAt, isDisableSelection, parsed.totalCycles]);
 
   const load = useCallback(async () => {
@@ -101,6 +110,10 @@ export function SubscriberSetAutoRenewModal({
   }, [open, loading, availability, options]);
 
   function runSubmit() {
+    if (enableBlockMessage && !isDisableSelection) {
+      toast.warning(enableBlockMessage);
+      return;
+    }
     if (noAffordablePeriod && !isDisableSelection) {
       toast.warning("Debit wallet has no credits for auto renewal.");
       return;
@@ -253,9 +266,14 @@ export function SubscriberSetAutoRenewModal({
           ) : previewUntilLabel ? (
             <div className="flex items-start gap-2.5 rounded-lg border border-violet-200 bg-violet-50 px-3.5 py-3 text-violet-950 dark:border-violet-500/25 dark:bg-violet-500/10 dark:text-violet-50">
               <CalendarDays className={cn(rsIconSm, "mt-0.5 shrink-0 text-violet-600 dark:text-violet-300")} aria-hidden />
-              <p className={cn(rsTextBody)}>
-                Auto renew until: <span className="font-semibold">{previewUntilLabel}</span>
-              </p>
+              <div className={cn(rsTextBody)}>
+                <p>
+                  Coverage through: <span className="font-semibold">{previewUntilLabel}</span>
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  The expiry column stays unchanged until each scheduled renewal runs.
+                </p>
+              </div>
             </div>
           ) : null}
         </div>
@@ -269,7 +287,13 @@ export function SubscriberSetAutoRenewModal({
             size="sm"
             className="bg-blue-600 text-white hover:bg-blue-500"
             onClick={runSubmit}
-            disabled={pending || loading || unchanged || (noAffordablePeriod && !isDisableSelection)}
+            disabled={
+              pending ||
+              loading ||
+              unchanged ||
+              (!!enableBlockMessage && !isDisableSelection) ||
+              (noAffordablePeriod && !isDisableSelection)
+            }
           >
             {pending ? "Saving…" : isDisableSelection ? "Disable Auto Renew" : "Set Auto Renew"}
           </Button>

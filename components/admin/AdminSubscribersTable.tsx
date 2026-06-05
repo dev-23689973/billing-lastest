@@ -75,6 +75,7 @@ import { SubscriberDetailViewModal } from "@/components/subscribers/SubscriberDe
 import { SubscriberRenewAccountModal } from "@/components/subscribers/SubscriberRenewAccountModal";
 import { SubscriberSetAutoRenewModal } from "@/components/subscribers/SubscriberSetAutoRenewModal";
 import { InlineEditableUserCell, type InlineUserSavePayload } from "@/components/admin/InlineEditableUserCell";
+import { openAutoRenewConfigureOrWarn } from "@/lib/client/openAutoRenewConfigureOrWarn";
 import { isBillingAccountExpired } from "@/lib/billingAccountExpiry";
 import { cn } from "@/lib/cn";
 import {
@@ -417,6 +418,7 @@ export function AdminSubscribersTable({
   const [autoRenewModalTarget, setAutoRenewModalTarget] = useState<{
     account: string;
     displayName?: string | null;
+    accountActive: boolean;
   } | null>(null);
   const [detailEditOpen, setDetailEditOpen] = useState(false);
   const [detailReloadGeneration, setDetailReloadGeneration] = useState(0);
@@ -695,9 +697,16 @@ export function AdminSubscribersTable({
   }
 
   const openAutoRenewForRow = useCallback((row: SubscriberListClientRow) => {
-    setAutoRenewModalTarget({
-      account: row.account,
-      displayName: row.full_name ?? row.username ?? row.account,
+    openAutoRenewConfigureOrWarn({
+      subscriptionExpired: isBillingAccountExpired(row.expires),
+      accountActive: row.status === 0,
+      onOpen: () => {
+        setAutoRenewModalTarget({
+          account: row.account,
+          displayName: row.full_name ?? row.username ?? row.account,
+          accountActive: row.status === 0,
+        });
+      },
     });
   }, []);
 
@@ -1724,6 +1733,7 @@ export function AdminSubscribersTable({
                         displayName={r.full_name ?? r.username ?? r.account}
                         resetReturnPath={resetReturnPath}
                         subscriptionExpired={subscriptionExpired}
+                        accountActive={r.status === 0}
                         validityOptions={validityOptions}
                         recoverBonusEnabled={recoverBonusEnabled}
                         subscribersPortal={subscribersPortal}
@@ -2143,6 +2153,7 @@ export function AdminSubscribersTable({
                           displayName={r.full_name ?? r.username ?? r.account}
                           resetReturnPath={resetReturnPath}
                           subscriptionExpired={subscriptionExpired}
+                          accountActive={r.status === 0}
                           validityOptions={validityOptions}
                           recoverBonusEnabled={recoverBonusEnabled}
                           subscribersPortal={subscribersPortal}
@@ -2240,6 +2251,7 @@ export function AdminSubscribersTable({
         <SubscriberSetAutoRenewModal
           account={autoRenewModalTarget.account}
           displayName={autoRenewModalTarget.displayName ?? autoRenewModalTarget.account}
+          accountActive={autoRenewModalTarget.accountActive}
           open
           onClose={() => setAutoRenewModalTarget(null)}
           validityOptions={validityOptions}
@@ -2274,6 +2286,7 @@ export function AdminSubscribersTable({
             displayName={detailRow.full_name ?? detailRow.username ?? detailRow.account}
             resetReturnPath={resetReturnPath}
             subscriptionExpired={isBillingAccountExpired(detailRow.expires)}
+            accountActive={detailRow.status === 0}
             validityOptions={validityOptions}
             recoverBonusEnabled={recoverBonusEnabled}
             subscribersPortal={subscribersPortal}

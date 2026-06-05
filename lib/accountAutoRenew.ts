@@ -171,36 +171,41 @@ export function parseAutoRenewExpiryBase(expiresAt: string | null | undefined): 
     return new Date(year, month - 1, day, 12, 0, 0, 0);
   }
   const d = new Date(raw.includes("T") ? raw : raw.replace(" ", "T"));
-  return Number.isNaN(d.getTime()) ? null : d;
+  if (Number.isNaN(d.getTime())) return null;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
 }
 
-/** Final expiry if all remaining auto-renew cycles succeed (current expiry + remaining cycles). */
+function formatLocalDateLabel(d: Date): string {
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+
+/** Final coverage end date if all scheduled renewals succeed (current expiry + total plan months). */
 export function computeAutoRenewUntilDate(
   expiresAt: string | null | undefined,
-  cyclesRemaining: number,
+  totalCycles: number,
 ): Date | null {
   const base = parseAutoRenewExpiryBase(expiresAt);
   if (!base) return null;
-  const extra = Math.max(0, Math.floor(cyclesRemaining));
-  return new Date(
-    base.getFullYear(),
-    base.getMonth() + extra,
-    base.getDate(),
-    base.getHours(),
-    base.getMinutes(),
-    base.getSeconds(),
-  );
+  const months = Math.max(0, Math.floor(totalCycles));
+  return new Date(base.getFullYear(), base.getMonth() + months, base.getDate(), 12, 0, 0, 0);
 }
 
+export function formatAutoRenewUntilLabelFromTotal(
+  expiresAt: string | null | undefined,
+  totalCycles: number,
+): string | null {
+  const until = computeAutoRenewUntilDate(expiresAt, totalCycles);
+  if (!until) return null;
+  return formatLocalDateLabel(until);
+}
+
+/** Uses remaining cycles from `accounts.credit` and converts to total plan months for display. */
 export function formatAutoRenewUntilLabel(
   expiresAt: string | null | undefined,
   cyclesRemaining: number,
 ): string | null {
-  const until = computeAutoRenewUntilDate(expiresAt, cyclesRemaining);
-  if (!until) return null;
-  return formatSubscriberExpiryDate(
-    `${until.getFullYear()}-${String(until.getMonth() + 1).padStart(2, "0")}-${String(until.getDate()).padStart(2, "0")}`,
-  );
+  const total = inferAutoRenewTotalCycles(true, Math.max(0, Math.floor(cyclesRemaining)));
+  return formatAutoRenewUntilLabelFromTotal(expiresAt, total);
 }
 
 export type AutoRenewUntilParts = { month: string; year: string };
@@ -209,12 +214,35 @@ export function formatAutoRenewUntilParts(
   expiresAt: string | null | undefined,
   cyclesRemaining: number,
 ): AutoRenewUntilParts | null {
-  const until = computeAutoRenewUntilDate(expiresAt, cyclesRemaining);
+  const total = inferAutoRenewTotalCycles(true, Math.max(0, Math.floor(cyclesRemaining)));
+  const until = computeAutoRenewUntilDate(expiresAt, total);
   if (!until) return null;
   return {
     month: AUTO_RENEW_MONTH_SHORT[until.getMonth()] ?? "—",
     year: String(until.getFullYear()),
   };
+}
+
+/** Block enabling auto-renew when the account is expired or inactive. */
+export function isAutoRenewEnableBlocked(input: {
+  subscriptionExpired: boolean;
+  accountActive: boolean;
+}): boolean {
+  return input.subscriptionExpired || !input.accountActive;
+}
+
+export function getAutoRenewEnableBlockMessage(input: {
+  subscriptionExpired: boolean;
+  accountActive: boolean;
+}): string | null {
+  if (!isAutoRenewEnableBlocked(input)) return null;
+  if (input.subscriptionExpired && !input.accountActive) {
+    return "This account is expired and disabled. Renew and enable it before setting auto renewal.";
+  }
+  if (input.subscriptionExpired) {
+    return "This account is expired. Renew it before setting auto renewal.";
+  }
+  return "This account is disabled. Turn it on before setting auto renewal.";
 }
 
 /** Total auto-renew period for display, e.g. “(12 months)”. */

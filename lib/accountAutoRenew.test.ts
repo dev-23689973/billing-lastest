@@ -7,8 +7,11 @@ import {
   formatAutoRenewEnabledCellDisplay,
   formatAutoRenewTotalMonthsLabel,
   formatAutoRenewUntilLabel,
+  formatAutoRenewUntilLabelFromTotal,
   formatAutoRenewUntilMonthYear,
   formatAutoRenewUntilParts,
+  getAutoRenewEnableBlockMessage,
+  isAutoRenewEnableBlocked,
   parseAutoRenewPeriodSelection,
 } from "@/lib/accountAutoRenew";
 
@@ -79,15 +82,21 @@ describe("accountAutoRenew set-auto-renew helpers", () => {
     expect(parseAutoRenewPeriodSelection("99")).toEqual({ enabled: true, totalCycles: 24 });
   });
 
-  it("computes auto renew until from expiry and remaining cycles", () => {
-    const until = computeAutoRenewUntilDate("2027-01-03 12:00:00", 3);
+  it("computes auto renew until from expiry and total plan months", () => {
+    const until = computeAutoRenewUntilDate("2027-01-03 12:00:00", 4);
     expect(until?.getFullYear()).toBe(2027);
-    expect(until?.getMonth()).toBe(3);
+    expect(until?.getMonth()).toBe(4);
     expect(until?.getDate()).toBe(3);
-    expect(formatAutoRenewUntilLabel("2027-01-03 12:00:00", 3)).toMatch(/2027/);
-    expect(formatAutoRenewUntilMonthYear("2028-02-01 12:00:00", 9)).toMatch(/Nov 2028/i);
-    expect(formatAutoRenewUntilMonthYear("2028-02-01", 9)).toBe("Nov 2028");
-    expect(formatAutoRenewUntilParts("2028-02-01", 9)).toEqual({ month: "Nov", year: "2028" });
+    expect(formatAutoRenewUntilLabel("2027-01-03 12:00:00", 3)).toMatch(/May 3, 2027/);
+    expect(formatAutoRenewUntilMonthYear("2028-02-01 12:00:00", 9)).toMatch(/Dec 2028/i);
+    expect(formatAutoRenewUntilMonthYear("2028-02-01", 9)).toBe("Dec 2028");
+    expect(formatAutoRenewUntilParts("2028-02-01", 9)).toEqual({ month: "Dec", year: "2028" });
+  });
+
+  it("shows one month ahead for a 1-month plan at expiry", () => {
+    expect(formatAutoRenewUntilLabelFromTotal("2026-06-05", 1)).toBe("Jul 5, 2026");
+    expect(formatAutoRenewUntilLabel("2026-06-05 00:00:00", 0)).toBe("Jul 5, 2026");
+    expect(formatAutoRenewUntilLabel("2026-06-04", 0)).toBe("Jul 4, 2026");
   });
 
   it("formats enabled cell as until date plus total months", () => {
@@ -95,6 +104,26 @@ describe("accountAutoRenew set-auto-renew helpers", () => {
     expect(formatAutoRenewTotalMonthsLabel(0)).toBe("(1 month)");
     const display = formatAutoRenewEnabledCellDisplay("2027-03-02 12:00:00", 11);
     expect(display?.periodMonthsLabel).toBe("(12 months)");
-    expect(display?.untilDateLabel).toMatch(/Feb \d+, 2028/);
+    expect(display?.untilDateLabel).toMatch(/Mar \d+, 2028/);
+  });
+
+  it("blocks enabling auto-renew when expired or inactive", () => {
+    expect(isAutoRenewEnableBlocked({ subscriptionExpired: true, accountActive: false })).toBe(true);
+    expect(isAutoRenewEnableBlocked({ subscriptionExpired: true, accountActive: true })).toBe(true);
+    expect(isAutoRenewEnableBlocked({ subscriptionExpired: false, accountActive: false })).toBe(true);
+    expect(isAutoRenewEnableBlocked({ subscriptionExpired: false, accountActive: true })).toBe(false);
+  });
+
+  it("returns a specific block message for each ineligible state", () => {
+    expect(
+      getAutoRenewEnableBlockMessage({ subscriptionExpired: true, accountActive: false }),
+    ).toMatch(/expired and disabled/i);
+    expect(getAutoRenewEnableBlockMessage({ subscriptionExpired: true, accountActive: true })).toMatch(
+      /expired/i,
+    );
+    expect(getAutoRenewEnableBlockMessage({ subscriptionExpired: false, accountActive: false })).toMatch(
+      /disabled/i,
+    );
+    expect(getAutoRenewEnableBlockMessage({ subscriptionExpired: false, accountActive: true })).toBeNull();
   });
 });

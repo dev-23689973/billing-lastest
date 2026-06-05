@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import { ArrowUpRight, HandCoins, Mail, MoreVertical, Pencil, Power, Repeat } from "lucide-react";
 import { toast } from "sonner";
+import { openAutoRenewConfigureOrWarn } from "@/lib/client/openAutoRenewConfigureOrWarn";
 import { operatorCopy } from "@/lib/operatorUiCopy";
 import { FloatingMenuPortal } from "@/components/ui/FloatingMenuPortal";
 import {
@@ -132,7 +133,11 @@ export function PortalSubscriberRowActions({
               className={floatingRowActionMenuItemClass}
               onClick={() => {
                 setOpen(false);
-                setAutoRenewOpen(true);
+                openAutoRenewConfigureOrWarn({
+                  subscriptionExpired,
+                  accountActive: rowStatus === 0,
+                  onOpen: () => setAutoRenewOpen(true),
+                });
               }}
             >
               <Repeat className={floatingRowActionMenuIconClass} />
@@ -331,6 +336,7 @@ export function PortalSubscriberRowActions({
         <SubscriberSetAutoRenewModal
           account={account}
           displayName={displayName}
+          accountActive={rowStatus === 0}
           open
           onClose={() => setAutoRenewOpen(false)}
           validityOptions={validityOptions}
