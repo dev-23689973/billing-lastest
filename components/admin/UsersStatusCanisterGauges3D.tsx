@@ -40,21 +40,22 @@ type StatusTheme = {
   Icon: (typeof GAUGE_SPECS)[number]["light"]["Icon"];
 };
 
+/** Plasma + accent aligned with `UsersStatusArcs3D` donut slices. */
 const GAUGE_SPECS = [
   {
     key: "active" as const,
     light: {
       label: "Active",
-      accent: "#059669",
-      glow: "0,230,118",
-      plasma: ["#00695c", "#00c853", "#69f0ae"],
+      accent: "#16a34a",
+      glow: "34,197,94",
+      plasma: ["#14532d", "#22c55e", "#86efac"],
       Icon: Activity,
     },
     dark: {
       label: "Active",
-      accent: "#69f0ae",
-      glow: "0,230,118",
-      plasma: ["#004d40", "#00e676", "#b9f6ca"],
+      accent: "#4ade80",
+      glow: "34,197,94",
+      plasma: ["#14532d", "#22c55e", "#bbf7d0"],
       Icon: Activity,
     },
   },
@@ -62,16 +63,16 @@ const GAUGE_SPECS = [
     key: "inactive" as const,
     light: {
       label: "Inactive",
-      accent: "#2563eb",
-      glow: "41,121,255",
-      plasma: ["#1a237e", "#448aff", "#82b1ff"],
+      accent: "#64748b",
+      glow: "100,116,139",
+      plasma: ["#334155", "#64748b", "#94a3b8"],
       Icon: UserMinus,
     },
     dark: {
       label: "Inactive",
-      accent: "#82b1ff",
-      glow: "68,138,255",
-      plasma: ["#0d47a1", "#2979ff", "#bbdefb"],
+      accent: "#94a3b8",
+      glow: "100,116,139",
+      plasma: ["#1e293b", "#64748b", "#cbd5e1"],
       Icon: UserMinus,
     },
   },
@@ -80,15 +81,15 @@ const GAUGE_SPECS = [
     light: {
       label: "Expired",
       accent: "#dc2626",
-      glow: "255,23,68",
-      plasma: ["#b71c1c", "#ff1744", "#ff8a80"],
+      glow: "220,38,38",
+      plasma: ["#991b1b", "#dc2626", "#f87171"],
       Icon: Ban,
     },
     dark: {
       label: "Expired",
-      accent: "#ff8a80",
-      glow: "255,82,82",
-      plasma: ["#7f0000", "#ff5252", "#ffcdd2"],
+      accent: "#f87171",
+      glow: "220,38,38",
+      plasma: ["#7f1d1d", "#dc2626", "#fecaca"],
       Icon: Ban,
     },
   },
@@ -96,16 +97,16 @@ const GAUGE_SPECS = [
     key: "expiring" as const,
     light: {
       label: "Soon",
-      accent: "#d97706",
-      glow: "255,145,0",
-      plasma: ["#e65100", "#ff9100", "#ffd180"],
+      accent: "#ea580c",
+      glow: "249,115,22",
+      plasma: ["#9a3412", "#f97316", "#fdba74"],
       Icon: Clock,
     },
     dark: {
       label: "Soon",
-      accent: "#ffd180",
-      glow: "255,171,0",
-      plasma: ["#bf360c", "#ffab00", "#ffe082"],
+      accent: "#fb923c",
+      glow: "249,115,22",
+      plasma: ["#7c2d12", "#f97316", "#fed7aa"],
       Icon: Clock,
     },
   },
@@ -346,54 +347,57 @@ function GaugeColumn({
   const glowText = `0 0 10px rgba(${glow},${isLight ? 0.45 : 0.9}), 0 0 22px rgba(${glow},${isLight ? 0.2 : 0.45})`;
 
   const inner = (
-    <>
-      <span
-        className={cn(
-          "game-pct font-black tabular-nums tracking-widest",
-          rsTextCaption,
-          "text-sm sm:text-base",
-          muted && "opacity-45",
-        )}
-        style={{ color: accent, textShadow: glowText }}
-      >
-        {pct}%
-      </span>
-
-      <div className="relative mx-auto w-full min-w-0 max-w-[5.75rem] flex-1 px-0.5 sm:max-w-[6.75rem]">
-        <div className="relative h-[9.5rem] w-full sm:h-[10.5rem] md:h-[11.25rem]">
-          <div className="relative z-[1] flex h-full w-full items-end justify-center pb-0.5 pt-1">
-            <GamingConduitSvg
-              pct={pct}
-              statusTheme={statusTheme}
-              isLight={isLight}
-              animDelayMs={animDelayMs}
-              muted={muted}
-            />
-          </div>
+    <div className="flex h-full min-h-[9.5rem] w-full min-w-0 items-center gap-1 sm:min-h-[10.5rem] sm:gap-1.5 md:min-h-[11.25rem] md:gap-2">
+      <div className="relative h-full w-[42%] min-w-[2.65rem] shrink-0 sm:w-[40%] sm:min-w-[2.85rem]">
+        <div className="relative flex h-full w-full items-center justify-center">
+          <GamingConduitSvg
+            pct={pct}
+            statusTheme={statusTheme}
+            isLight={isLight}
+            animDelayMs={animDelayMs}
+            muted={muted}
+          />
         </div>
       </div>
 
-      <div className={cn("flex flex-col items-center gap-0.5 text-center", muted && "opacity-45")}>
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col items-start justify-center gap-0.5 pl-0.5 sm:gap-1 sm:pl-1",
+          muted && "opacity-45",
+        )}
+      >
         <span
-          className={cn("font-bold uppercase tracking-[0.2em]", rsTextKicker)}
+          className={cn(
+            "game-pct font-black tabular-nums leading-none tracking-tight",
+            rsTextCaption,
+            "text-base sm:text-lg",
+          )}
+          style={{ color: accent, textShadow: glowText }}
+        >
+          {pct}%
+        </span>
+        <span
+          className={cn("font-bold uppercase tracking-[0.12em] leading-tight", rsTextKicker)}
           style={{ color: accent, textShadow: `0 0 8px rgba(${glow},${isLight ? 0.35 : 0.65})` }}
         >
           {label}
         </span>
-        <span className={cn("font-semibold tabular-nums text-muted-foreground/90", rsTextCaption)}>{formatInt(count)}</span>
+        <span className={cn("font-semibold tabular-nums leading-none text-muted-foreground/90", rsTextCaption)}>
+          {formatInt(count)}
+        </span>
         <Icon
-          className="h-3.5 w-3.5 sm:h-4 sm:w-4"
+          className="mt-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4"
           style={{ color: accent, filter: `drop-shadow(0 0 5px rgba(${glow},0.75))` }}
           strokeWidth={2.25}
           aria-hidden
         />
       </div>
-    </>
+    </div>
   );
 
   const colClass = cn(
-    "game-col group/col flex min-w-0 flex-1 flex-col items-center justify-between gap-1 py-0.5",
-    href && "rounded-sm outline-none transition-transform duration-300 hover:-translate-y-1 focus-visible:ring-2 focus-visible:ring-cyan-400/75",
+    "game-col group/col flex min-w-0 flex-1 flex-col justify-center py-0.5",
+    href && "rounded-sm outline-none transition-transform duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-cyan-400/75",
   );
 
   if (!href) return <div className={colClass}>{inner}</div>;
@@ -513,7 +517,7 @@ export function UsersStatusCanisterGauges3D({
         }}
       />
 
-      <div className="grid w-full min-w-0 grid-cols-4 items-stretch gap-x-1.5 sm:gap-x-3 md:gap-x-4">
+      <div className="grid w-full min-w-0 grid-cols-4 items-stretch gap-x-2 sm:gap-x-3 md:gap-x-4">
         {GAUGE_SPECS.map((spec, i) => (
           <GaugeColumn
             key={spec.key}

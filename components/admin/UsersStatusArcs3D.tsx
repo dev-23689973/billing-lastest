@@ -352,7 +352,7 @@ export function UsersStatusArcs3D({
           )}
         </div>
       </div>
-      <div className="flex min-w-0 flex-1 flex-col justify-center self-stretch sm:min-w-[22rem] md:min-w-[26rem] lg:min-w-[28rem]">
+      <div className="flex min-w-0 flex-1 flex-col justify-center self-stretch sm:min-w-[24rem] md:min-w-[28rem] lg:min-w-[32rem]">
         <UsersStatusCanisterGauges3D
           total={totalSafe}
           active={active}
