@@ -1,3 +1,6 @@
+/** Max validity tier length for renewal credit rules (5 years). */
+export const CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS = 60;
+
 export type DeductionRuleInput = {
   month: number;
   creditsCharged: number;
@@ -32,8 +35,11 @@ export function validateDeductionRules(
   for (let i = 0; i < rules.length; i++) {
     const month = Math.floor(Number(rules[i]?.month));
     const creditsCharged = Math.floor(Number(rules[i]?.creditsCharged));
-    if (!Number.isFinite(month) || month < 1 || month > 24) {
-      return { ok: false, error: `Rule ${i + 1}: validity must be between 1 and 24 months.` };
+    if (!Number.isFinite(month) || month < 1 || month > CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS) {
+      return {
+        ok: false,
+        error: `Rule ${i + 1}: validity must be between 1 and ${CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS} months (5 years).`,
+      };
     }
     if (!Number.isFinite(creditsCharged) || creditsCharged < 0 || creditsCharged > month) {
       return { ok: false, error: `Rule ${i + 1}: credits charged must be between 0 and ${month}.` };
@@ -60,7 +66,9 @@ export function buildMonthDeductionChargedMap(
   for (const row of rows) {
     const month = Math.floor(Number(row.month));
     const monthDeduction = Math.floor(Number(row.month_deduction) || 0);
-    if (!Number.isFinite(month) || month < 1 || month > 24 || monthDeduction <= 0) continue;
+    if (!Number.isFinite(month) || month < 1 || month > CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS || monthDeduction <= 0) {
+      continue;
+    }
     const charged = creditsChargedFromMonthDeduction(month, monthDeduction);
     if (charged > 0 && charged < month) {
       map[month] = charged;

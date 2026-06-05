@@ -61,7 +61,7 @@ const SelectContent = React.forwardRef<React.ElementRef<typeof SelectPrimitive.C
         collisionPadding={12}
         data-form-select-clamp-trigger={clampToTriggerWidth ? "true" : undefined}
         className={cn(
-          "relative z-[250] box-border max-h-[min(18rem,var(--radix-select-content-available-height))] overflow-hidden border border-border bg-card text-card-foreground shadow-lg ring-1 ring-black/[0.04] dark:bg-popover dark:ring-white/[0.06]",
+          "form-select-dropdown-panel relative z-[250] box-border max-h-[min(18rem,var(--radix-select-content-available-height))] overflow-hidden border border-border bg-popover text-popover-foreground shadow-lg ring-1 ring-black/[0.04] backdrop-blur-md dark:ring-white/[0.06]",
           clampToTriggerWidth
             ? "w-[var(--radix-select-trigger-width)] min-w-[var(--radix-select-trigger-width)] max-w-[var(--radix-select-trigger-width)]"
             : "min-w-[var(--radix-select-trigger-width)] w-max max-w-[min(20rem,var(--radix-select-content-available-width))]",
@@ -109,8 +109,8 @@ const SelectItem = React.forwardRef<React.ElementRef<typeof SelectPrimitive.Item
       className={cn(
         "relative flex min-h-6 w-full cursor-pointer select-none items-center whitespace-nowrap rounded-md py-1 pr-2 text-sm font-medium leading-snug text-foreground outline-none transition-[color,background-color] duration-150",
         showCheck ? "pl-7" : "pl-2.5",
-        "data-[highlighted]:bg-muted/55 data-[highlighted]:text-foreground",
-        "data-[state=checked]:bg-muted/70",
+        "data-[highlighted]:bg-slate-100 data-[highlighted]:text-foreground dark:data-[highlighted]:bg-muted/55",
+        "data-[state=checked]:bg-slate-200/90 dark:data-[state=checked]:bg-muted/70",
         "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
         className,
       )}

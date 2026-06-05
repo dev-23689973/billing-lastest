@@ -1,4 +1,4 @@
-import { buildMonthDeductionChargedMap } from "@/lib/creditDeductions";
+import { buildMonthDeductionChargedMap, CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS } from "@/lib/creditDeductions";
 
 export type ValidityOption = { value: string; label: string };
 
@@ -33,7 +33,7 @@ export function buildValidityOptions(
   deductionMap: Record<number, number>,
   input: BuildValidityOptionsInput = {},
 ): ValidityOption[] {
-  const maxMonths = input.maxMonths ?? 24;
+  const maxMonths = input.maxMonths ?? CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS;
   const head: ValidityOption[] = [{ value: "FREE_TRIAL", label: input.trialLabel ?? "2 days trial" }];
   if (input.monthFree) {
     head.push({ value: "1_MONTH_FREE", label: "1 month free (bonus)" });

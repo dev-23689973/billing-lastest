@@ -18,6 +18,7 @@ import {
   managersToolbarGreyFocus,
 } from "@/components/admin/managers-toolbar-icon-button";
 import { cn } from "@/lib/cn";
+import { rsIconMd } from "@/lib/ui/responsiveScale";
 
 const deductionsTierTableShell =
   "w-full overflow-hidden rounded-lg border border-border/60 bg-card/80 ring-1 ring-black/[0.04] dark:ring-white/[0.06]";
@@ -25,7 +26,7 @@ const deductionsTierTableShell =
 const deductionTierSelectClass = cn(
   "flex h-8 min-h-8 w-full min-w-0 items-center justify-between gap-1 rounded-lg px-2 text-xs font-medium leading-none shadow-none",
   managersToolbarGreyBorder,
-  "bg-background/40 backdrop-blur-sm dark:bg-white/[0.05]",
+  "bg-white/95 backdrop-blur-sm dark:bg-white/[0.05]",
   managersToolbarGreyBorderHover,
   managersToolbarGreyFocus,
   "transition-[border-color,box-shadow] duration-300 ease-out",
@@ -36,8 +37,19 @@ const deductionTierSelectClass = cn(
 const tierHeadCell =
   "px-1 py-1.5 text-center text-[10px] font-semibold uppercase tracking-wide text-muted-foreground";
 const tierRowGrid =
-  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_2.75rem] items-center gap-x-2 border-b border-border/60 px-2 py-1.5 last:border-b-0 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_3.5rem_2.75rem]";
+  "grid w-full grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_3rem] items-center gap-x-2 border-b border-border/60 px-2 py-1.5 last:border-b-0 sm:grid-cols-[2.25rem_minmax(0,1fr)_minmax(0,1fr)_3.5rem_3rem]";
 const tierCell = "min-w-0";
+
+const tierRemoveButtonClass = cn(
+  "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border p-0 shadow-sm",
+  "border-rose-200/70 bg-rose-50/80 text-rose-600/90",
+  "transition-[color,background-color,border-color,box-shadow,transform] duration-200 ease-out",
+  "hover:border-rose-300/80 hover:bg-rose-100 hover:text-rose-700 hover:shadow-md",
+  "active:scale-[0.97]",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/35 focus-visible:ring-offset-1",
+  "dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-400",
+  "dark:hover:border-rose-400/35 dark:hover:bg-rose-500/18 dark:hover:text-rose-300",
+);
 
 const policyCardClass = cn(
   "flex cursor-pointer items-start gap-2 rounded-md border border-border/60 bg-card/80 p-2.5 transition-colors",
@@ -212,11 +224,12 @@ export function DeductionsConfigForm({
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 shrink-0 p-0 text-muted-foreground/80 hover:bg-destructive/15 hover:text-destructive"
+                      className={tierRemoveButtonClass}
                       onClick={() => setRules((r) => r.filter((_, j) => j !== index))}
                       aria-label={`Remove tier ${index + 1}`}
+                      title="Remove tier"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className={rsIconMd} strokeWidth={2.25} aria-hidden />
                     </Button>
                   </span>
                 </div>

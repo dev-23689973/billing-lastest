@@ -9,6 +9,7 @@ import {
   buildMonthDeductionChargedMap,
   monthRenewChargedCredits,
 } from "@/lib/repos/accountCreate";
+import { CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS } from "@/lib/creditDeductions";
 import { getCreditBalance } from "@/lib/repos/creditBalance";
 import {
   getStalkerCustomPackagePlanId,
@@ -7000,12 +7001,12 @@ export function phpCalendarYearMonthsBetween(dateA: Date, dateB: Date): number {
   return y * 12 + m;
 }
 
-/** PHP reseller/dealer `check_validity_format`: FREE_TRIAL, 1_MONTH_FREE, or months 1..24 */
+/** PHP reseller/dealer `check_validity_format`: FREE_TRIAL, 1_MONTH_FREE, or months 1..60 (5 years). */
 export function operatorRenewValidityFormatLikePhp(validity: string): boolean {
   const v = validity.trim().toUpperCase();
   if (v === "FREE_TRIAL" || v === "1_MONTH_FREE") return true;
   const n = Number.parseInt(validity.trim(), 10);
-  return Number.isFinite(n) && n >= 1 && n <= 24;
+  return Number.isFinite(n) && n >= 1 && n <= CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS;
 }
 
 export type PortalOperatorRcdtPrecheckResult =
@@ -7431,7 +7432,9 @@ export async function renewAccountByOperatorMonths(input: {
   debitUsername?: string;
 }): Promise<RenewAccountResult> {
   const months = Math.floor(Number(input.months));
-  if (!Number.isFinite(months) || months < 1 || months > 24) return { ok: false, code: "invalid" };
+  if (!Number.isFinite(months) || months < 1 || months > CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS) {
+    return { ok: false, code: "invalid" };
+  }
 
   const stalker = getStalkerPool();
   if (!stalker) return { ok: false, code: "no_stalker" };

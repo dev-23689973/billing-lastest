@@ -38,7 +38,7 @@ export default async function DeductionsPage({ searchParams }: Props) {
           <div className="min-w-0">
             <h2 className="text-sm font-semibold tracking-tight text-foreground">Renewal credit rules</h2>
             <p className="mt-0.5 text-[11px] leading-snug text-muted-foreground">
-              Promo applies only on listed month values (e.g. 4, 6, 12). Other months renew at 1 credit per month.
+              Promo applies only on listed month values (e.g. 4, 6, 12). Other months renew at 1 credit per month. Tiers up to 60 months (5 years).
             </p>
           </div>
           <span className="shrink-0 rounded-md border border-border/60 bg-muted/30 px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-foreground">

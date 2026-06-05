@@ -1,9 +1,10 @@
 "use client";
 
 import { FormSelect } from "@/components/forms/form-select";
+import { CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS } from "@/lib/creditDeductions";
 
 function monthOptions(compact?: boolean) {
-  return Array.from({ length: 24 }, (_, i) => {
+  return Array.from({ length: CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS }, (_, i) => {
     const m = i + 1;
     return {
       value: String(m),

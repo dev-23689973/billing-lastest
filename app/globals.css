@@ -597,6 +597,12 @@ html {
   .intel-guide-mark-glyph {
     text-shadow: 0 0 4px rgb(8 145 178 / 0.3), 0 0 8px rgb(8 145 178 / 0.12);
   }
+  /* FormSelect / Radix dropdown — opaque in light theme (--card/--muted are transparent). */
+  :root:not(.dark) .form-select-dropdown-panel {
+    background-color: #ffffff !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
   /* Popover + announcement modal — opaque in light theme (--card is transparent). */
   :root:not(.dark) .intel-guide-popup {
     background-color: #ffffff !important;
