@@ -40,6 +40,7 @@ import {
   rollbackStaffCreate,
 } from "@/lib/staff/staffCreateWithCredits";
 import { ticketDetailRedirect, ticketsListRedirect } from "@/lib/tickets/ticketsListRedirect";
+import { isCreateOnlyValidityValue } from "@/lib/validityOptions";
 
 function ticketPortalBase(base: string): "/admin" | "/manager" | "/reseller" | "/dealer" {
   if (base === "/manager" || base === "/reseller" || base === "/dealer") return base;
@@ -2268,6 +2269,9 @@ export async function renewPortalSubscriberAccountAction(input: {
   const validity = String(input.validity ?? "").trim();
   if (!account) return { ok: false, error: "no_account" };
   if (!validity) return { ok: false, error: "no_validity" };
+  if (isCreateOnlyValidityValue(validity)) {
+    return { ok: false, error: "invalid", message: "Free trial and free month are not available when renewing." };
+  }
 
   const inScope = await repo.canAccessAccountByRole({
     ownerType: s.type,
@@ -2551,6 +2555,9 @@ export async function renewUserAction(formData: FormData) {
   const credits = Number.parseInt(creditsRaw, 10);
   if (!account) redirect("/admin/users?error=missing");
   await repo.creditSummarizeBeforeUpdate(account);
+  if (type !== "RCDT" && isCreateOnlyValidityValue(validityRaw)) {
+    redirect(`/admin/users/${encodeURIComponent(account)}?error=renew_invalid`);
+  }
   const r =
     type === "RCDT"
       ? await repo.recoverAccountCreditsByOperator({ account, credits })
@@ -2633,6 +2640,9 @@ export async function renewOperatorUserAction(formData: FormData) {
     r = await repo.recoverAccountCreditsByOperator({ account, credits });
   } else {
     if (!repo.operatorRenewValidityFormatLikePhp(validityRaw)) {
+      redirect(`${base}/users/${encodeURIComponent(account)}?error=renew_invalid`);
+    }
+    if (isCreateOnlyValidityValue(validityRaw)) {
       redirect(`${base}/users/${encodeURIComponent(account)}?error=renew_invalid`);
     }
     const debitUsername = await resolvePortalRenewDebitUsername(s, account);

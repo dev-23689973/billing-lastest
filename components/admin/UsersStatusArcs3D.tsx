@@ -1,5 +1,5 @@
 /**
- * Users KPI — extruded concentric arc stack (Three.js + R3F), same family as `StaffRadialBarChart3D`.
+ * Users KPI — extruded concentric arc stack (Three.js + R3F) + four 3D canister gauges.
  * Gold hub + four status arcs (active, inactive, expired, expiring). Expired red uses a thinner radial band.
  */
 
@@ -9,27 +9,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMotionActive } from "@/lib/motionLifecycle";
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Activity, Ban, Clock, Layers, UserMinus } from "lucide-react";
 
 import { HudGroundShadow } from "@/components/dashboard/hud/HudGroundShadow";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/cn";
-import {
-  StatusChevronBelts,
-  beltSharePct,
-  type StatusChevronBeltRow,
-} from "@/components/ui/StatusChevronBelts";
+import { UsersStatusCanisterGauges3D } from "@/components/admin/UsersStatusCanisterGauges3D";
+import type { UsersStatusGaugeHrefs } from "@/components/admin/UsersStatusCanisterGauges3D";
 
-export type UsersStatusBeltHrefs = {
-  all: string;
-  active: string;
-  inactive: string;
-  expired: string;
-  expiring: string;
-};
+export type UsersStatusBeltHrefs = UsersStatusGaugeHrefs;
 
 export type UsersStatusArcs3DProps = {
-  /** Denominator for belt percentages and “Total” row. */
+  /** Denominator for gauge percentages. */
   total: number;
   active: number;
   inactive: number;
@@ -37,7 +27,7 @@ export type UsersStatusArcs3DProps = {
   expiring: number;
   /** When false, expiring count is treated as 0 for the chart. */
   expiringEnabled: boolean;
-  /** Optional filter URLs for each chevron row. */
+  /** Optional filter URLs for each gauge column. */
   beltHrefs?: UsersStatusBeltHrefs;
   className?: string;
 };
@@ -292,96 +282,6 @@ function formatInt(n: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
 }
 
-function pctOfTotal(count: number, total: number) {
-  if (total <= 0) return 0;
-  return Math.min(100, (count / total) * 100);
-}
-
-function UsersStatusChevronBelts({
-  total,
-  active,
-  inactive,
-  expired,
-  expiring,
-  expiringEnabled,
-  hrefs,
-}: {
-  total: number;
-  active: number;
-  inactive: number;
-  expired: number;
-  expiring: number;
-  expiringEnabled: boolean;
-  hrefs?: UsersStatusBeltHrefs;
-}) {
-  const exp = expiringEnabled ? expiring : 0;
-  const denom = Math.max(0, total);
-
-  const rowsForBelts: StatusChevronBeltRow[] = useMemo(
-    () => [
-      {
-        key: "total",
-        label: "TOTAL",
-        subline: formatInt(denom),
-        widthPct: beltSharePct(denom, denom, true),
-        shareWeight: denom,
-        gradient: "from-amber-400 via-amber-500 to-yellow-700",
-        Icon: Layers,
-        href: hrefs?.all,
-        iconClass: "text-amber-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]",
-      },
-      {
-        key: "active",
-        label: "ACTIVE",
-        subline: `${denom > 0 ? Math.round(pctOfTotal(active, denom)) : 0}% (${formatInt(active)})`,
-        widthPct: beltSharePct(active, denom, false),
-        shareWeight: active,
-        gradient: "from-emerald-400 to-emerald-700",
-        Icon: Activity,
-        href: hrefs?.active,
-        iconClass: "text-emerald-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]",
-      },
-      {
-        key: "inactive",
-        label: "INACTIVE",
-        subline: `${denom > 0 ? Math.round(pctOfTotal(inactive, denom)) : 0}% (${formatInt(inactive)})`,
-        widthPct: beltSharePct(inactive, denom, false),
-        shareWeight: inactive,
-        gradient: "from-slate-400 to-slate-700",
-        Icon: UserMinus,
-        href: hrefs?.inactive,
-        iconClass: "text-sky-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]",
-      },
-      {
-        key: "expired",
-        label: "EXPIRED",
-        subline: `${denom > 0 ? Math.round(pctOfTotal(expired, denom)) : 0}% (${formatInt(expired)})`,
-        widthPct: beltSharePct(expired, denom, false),
-        shareWeight: expired,
-        gradient: "from-rose-300 to-red-700",
-        Icon: Ban,
-        href: hrefs?.expired,
-        iconClass: "text-rose-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]",
-      },
-      {
-        key: "expiring",
-        label: "EXPIRING SOON",
-        subline: `${denom > 0 ? Math.round(pctOfTotal(exp, denom)) : 0}% (${formatInt(exp)})`,
-        widthPct: beltSharePct(exp, denom, false),
-        shareWeight: exp,
-        gradient: "from-orange-400 to-orange-700",
-        Icon: Clock,
-        href: hrefs?.expiring,
-        muted: !expiringEnabled,
-        iconClass: "text-orange-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.55)]",
-      },
-    ],
-    [active, denom, exp, expired, expiringEnabled, hrefs, inactive],
-  );
-
-  return <StatusChevronBelts rows={rowsForBelts} className="w-full min-w-0 flex-1" />;
-}
-
 export function UsersStatusArcs3D({
   total,
   active,
@@ -452,8 +352,8 @@ export function UsersStatusArcs3D({
           )}
         </div>
       </div>
-      <div className="flex min-w-0 flex-1 flex-col justify-center self-center sm:min-w-[34rem]">
-        <UsersStatusChevronBelts
+      <div className="flex min-w-0 flex-1 flex-col justify-center self-stretch sm:min-w-[22rem] md:min-w-[26rem] lg:min-w-[28rem]">
+        <UsersStatusCanisterGauges3D
           total={totalSafe}
           active={active}
           inactive={inactive}

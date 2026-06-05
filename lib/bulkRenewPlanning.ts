@@ -1,6 +1,7 @@
 import type { SubscriberRenewRecoverSuccessDetails } from "@/lib/subscriberRenewRecoverSuccess";
 import {
   clampValiditySelection,
+  isCreateOnlyValidityValue,
   validityOptionChargedCredits,
   type ValidityOption,
 } from "@/lib/validityOptions";
@@ -98,9 +99,7 @@ export function filterBulkRenewValidityOptions(
   if (wallets.length === 0) return [];
   const bestOffAvg = bestOffWalletAverageCredits(wallets);
   return options.filter((option) => {
-    if (option.value === "FREE_TRIAL" || option.value === "1_MONTH_FREE") {
-      return wallets.some((w) => w.debitCredits > 0);
-    }
+    if (isCreateOnlyValidityValue(option.value)) return false;
     const charged = validityOptionChargedCredits(option);
     if (!Number.isFinite(charged) || charged < 1) return false;
     return charged <= bestOffAvg;
@@ -109,10 +108,8 @@ export function filterBulkRenewValidityOptions(
 
 /** All selected accounts under this wallet renew, or the whole wallet is skipped. */
 export function walletAffordableForBulkOption(wallet: BulkRenewWalletGroup, option: ValidityOption): boolean {
+  if (isCreateOnlyValidityValue(option.value)) return false;
   const charged = validityOptionChargedCredits(option);
-  if (option.value === "FREE_TRIAL" || option.value === "1_MONTH_FREE") {
-    return wallet.debitCredits > 0 && wallet.accountCount > 0;
-  }
   if (!Number.isFinite(charged) || charged < 1) return false;
   return wallet.debitCredits >= charged * wallet.accountCount;
 }

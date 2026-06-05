@@ -238,11 +238,11 @@ export function SubscriberSetAutoRenewModal({
           <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 dark:border-sky-500/25 dark:bg-sky-500/10">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
               <CreditCard className={cn(rsIconSm, "text-sky-600 dark:text-sky-300")} aria-hidden />
-              Cost Information
+              Spending Insights
             </div>
             <div className="space-y-1.5 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Credits selected:</span>
+                <span className="text-muted-foreground">Credits Applied:</span>
                 <span className="font-semibold tabular-nums text-foreground">
                   {loading || availableCredits == null ? "—" : selectedCredits}
                 </span>

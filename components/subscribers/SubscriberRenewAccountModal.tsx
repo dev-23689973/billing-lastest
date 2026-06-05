@@ -23,7 +23,7 @@ import {
 import { rsIconSm, rsTextBody, rsTextHeadingSm } from "@/lib/ui/responsiveScale";
 import {
   clampValiditySelection,
-  filterValidityOptionsByDebitCredits,
+  filterRenewValidityOptionsByDebitCredits,
   validityOptionChargedCredits,
   type ValidityOption,
 } from "@/lib/validityOptions";
@@ -71,18 +71,13 @@ export function SubscriberRenewAccountModal({
   const debitBalance = availability?.debitCredits ?? null;
 
   const renewValidityOptions = useMemo(
-    () => filterValidityOptionsByDebitCredits(validityOptions, debitBalance),
+    () => filterRenewValidityOptionsByDebitCredits(validityOptions, debitBalance),
     [validityOptions, debitBalance],
   );
 
   const noAffordableValidity = !availabilityLoading && renewValidityOptions.length === 0;
   const selectedOption = renewValidityOptions.find((o) => o.value === validity);
-  const chargedCredits =
-    selectedOption != null
-      ? validityOptionChargedCredits(selectedOption)
-      : validity === "FREE_TRIAL" || validity === "1_MONTH_FREE"
-        ? 0
-        : null;
+  const chargedCredits = selectedOption != null ? validityOptionChargedCredits(selectedOption) : null;
 
   const renewCurrentExpiry = parseRenewExpiryDate(availability?.expiresAt);
   const previewMonths = selectedOption ? renewPeriodMonths(selectedOption) : 0;
@@ -232,11 +227,11 @@ export function SubscriberRenewAccountModal({
           <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 dark:border-sky-500/25 dark:bg-sky-500/10">
             <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-foreground">
               <CreditCard className={cn(rsIconSm, "text-sky-600 dark:text-sky-300")} aria-hidden />
-              Cost Information
+              Spending Insights
             </div>
             <div className="space-y-1.5 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <span className="text-muted-foreground">Credits selected:</span>
+                <span className="text-muted-foreground">Credits Applied:</span>
                 <span className="font-semibold tabular-nums text-foreground">
                   {availabilityLoading || chargedCredits == null ? "—" : chargedCredits}
                 </span>
@@ -251,7 +246,7 @@ export function SubscriberRenewAccountModal({
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-600/30 dark:bg-slate-900/40">
-            <p className="text-sm font-semibold text-foreground">Current Expiry Date</p>
+            <p className="text-sm font-semibold text-foreground">Present Expiration Date</p>
             <p className={cn("mt-2 flex flex-wrap items-center gap-2", rsTextBody, "text-muted-foreground")}>
               <CalendarDays className={cn(rsIconSm, "text-slate-500")} aria-hidden />
               <span className="font-semibold text-foreground">{availabilityLoading ? "Loading…" : currentExpiryLabel ?? "—"}</span>
@@ -260,7 +255,7 @@ export function SubscriberRenewAccountModal({
           </div>
 
           <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/25 dark:bg-emerald-500/10">
-            <p className="text-sm font-semibold text-foreground">New Expiry Date</p>
+            <p className="text-sm font-semibold text-foreground">Extended Expiration Date</p>
             <p className={cn("mt-2 flex flex-wrap items-center gap-2", rsTextBody)}>
               <CalendarDays className={cn(rsIconSm, "text-emerald-600 dark:text-emerald-300")} aria-hidden />
               <span className="font-semibold text-emerald-700 dark:text-emerald-200">

@@ -10,6 +10,7 @@ import {
   monthRenewChargedCredits,
 } from "@/lib/repos/accountCreate";
 import { CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS } from "@/lib/creditDeductions";
+import { isCreateOnlyValidityValue } from "@/lib/validityOptions";
 import { getCreditBalance } from "@/lib/repos/creditBalance";
 import {
   getStalkerCustomPackagePlanId,
@@ -6689,11 +6690,12 @@ export async function renewSubscriberAccountWithAutoRenew(input: {
   const validityUpper = validityRaw.toUpperCase();
   const auto = input.autoRenew;
 
+  if (isCreateOnlyValidityValue(validityUpper)) {
+    return { ok: false, code: "invalid" };
+  }
+
   let validityForRenew = validityRaw;
   if (auto?.enabled) {
-    if (validityUpper === "FREE_TRIAL" || validityUpper === "1_MONTH_FREE") {
-      return { ok: false, code: "invalid" };
-    }
     validityForRenew = "1";
   }
 
@@ -6755,8 +6757,9 @@ export async function bulkRenewAccountsByOperator(input: {
 }): Promise<BulkRenewAccountResult[]> {
   const validityTrim = String(input.validity ?? "").trim();
   const validityUpper = validityTrim.toUpperCase();
-  const isFreeTrial = validityUpper === "FREE_TRIAL";
-  const validityForRenew = isFreeTrial ? "FREE_TRIAL" : validityTrim;
+  if (isCreateOnlyValidityValue(validityUpper)) {
+    return [{ account: "—", ok: false, message: "Free trial and free month are not supported in bulk renew." }];
+  }
 
   const validityInt = Number.parseInt(validityTrim, 10);
   const needsCreditCheck = Number.isFinite(validityInt) && validityInt > 0;
@@ -6800,15 +6803,11 @@ export async function bulkRenewAccountsByOperator(input: {
   for (const [debitUsername, walletAccounts] of byWallet) {
     const walletCount = walletAccounts.length;
     const walletRequired = needsCreditCheck ? chargedForValidity * walletCount : 0;
-    const needsWalletGate = needsCreditCheck || isFreeTrial;
 
-    if (needsWalletGate) {
+    if (needsCreditCheck) {
       const balance = await getCreditBalance(debitUsername);
-      const affordable = isFreeTrial ? balance > 0 : balance >= walletRequired;
-      if (!affordable) {
-        const skipMessage = isFreeTrial
-          ? `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — no credits remaining.`
-          : `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — insufficient credits (balance: ${balance}, required: ${walletRequired} for ${validityTrim}).`;
+      if (balance < walletRequired) {
+        const skipMessage = `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — insufficient credits (balance: ${balance}, required: ${walletRequired} for ${validityTrim}).`;
         for (const account of walletAccounts) {
           out.push({ account, ok: false, message: skipMessage });
         }
@@ -6819,7 +6818,7 @@ export async function bulkRenewAccountsByOperator(input: {
     for (const account of walletAccounts) {
       await creditSummarizeBeforeUpdate(account);
 
-      const r = await renewAccountByOperatorValidity({ account, validity: validityForRenew });
+      const r = await renewAccountByOperatorValidity({ account, validity: validityTrim });
       if (!r.ok) {
         out.push({ account, ok: false, message: bulkRenewFailureMessage(account, validityTrim, r) });
         continue;
@@ -6851,11 +6850,10 @@ export async function bulkRenewPortalAccountsByOperator(input: {
   if (!operatorRenewValidityFormatLikePhp(validityTrim)) {
     return [{ account: "—", ok: false, message: "Invalid validity for bulk renew." }];
   }
-  if (validityUpper === "1_MONTH_FREE") {
-    return [{ account: "—", ok: false, message: "1_MONTH_FREE is not supported in bulk renew." }];
+  if (isCreateOnlyValidityValue(validityUpper)) {
+    return [{ account: "—", ok: false, message: "Free trial and free month are not supported in bulk renew." }];
   }
 
-  const isFreeTrial = validityUpper === "FREE_TRIAL";
   const validityInt = Number.parseInt(validityTrim, 10);
 
   const unique = [...new Set(input.accounts.map((x) => String(x ?? "").trim()).filter(Boolean))].slice(0, 250);
@@ -6872,7 +6870,7 @@ export async function bulkRenewPortalAccountsByOperator(input: {
   const deductionMap = buildMonthDeductionChargedMap(
     dedRows.map((d) => ({ month: Number(d.month), month_deduction: Number(d.month_deduction) })),
   );
-  const chargedPerRenew = isFreeTrial ? 0 : monthRenewChargedCredits(validityInt, deductionMap);
+  const chargedPerRenew = monthRenewChargedCredits(validityInt, deductionMap);
 
   type PortalBulkEntry = { account: string; debitUsername: string };
   const entries: PortalBulkEntry[] = [];
@@ -6912,14 +6910,11 @@ export async function bulkRenewPortalAccountsByOperator(input: {
 
   for (const [debitUsername, walletAccounts] of byWallet) {
     const walletCount = walletAccounts.length;
-    const walletRequired = isFreeTrial ? 0 : chargedPerRenew * walletCount;
+    const walletRequired = chargedPerRenew * walletCount;
     const balance = await getCreditBalance(debitUsername);
-    const affordable = isFreeTrial ? balance > 0 : balance >= walletRequired;
 
-    if (!affordable) {
-      const skipMessage = isFreeTrial
-        ? `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — no credits remaining.`
-        : `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — insufficient credits (balance: ${balance}, required: ${walletRequired} for ${validityTrim}).`;
+    if (balance < walletRequired) {
+      const skipMessage = `Wallet ${debitUsername}: skipped ${walletCount} account${walletCount === 1 ? "" : "s"} — insufficient credits (balance: ${balance}, required: ${walletRequired} for ${validityTrim}).`;
       for (const account of walletAccounts) {
         out.push({ account, ok: false, message: skipMessage });
       }
@@ -6930,7 +6925,7 @@ export async function bulkRenewPortalAccountsByOperator(input: {
       await creditSummarizeBeforeUpdate(account);
       const r = await renewAccountByOperatorValidity({
         account,
-        validity: isFreeTrial ? "FREE_TRIAL" : validityTrim,
+        validity: validityTrim,
         debitUsername,
       });
       if (!r.ok) {
@@ -6949,9 +6944,8 @@ export async function bulkRenewPortalAccountsByOperator(input: {
 }
 
 /**
- * Renew by validity value from PHP form (`1..24` or `FREE_TRIAL`).
- * FREE_TRIAL follows PHP `Users_model::renew` path: no debit, insert `free_trial_users`,
- * update billing expiry + summarize expiry.
+ * Renew an existing subscriber by paid month count (`1..N` from credit deductions config).
+ * Free trial and free month are create-only — rejected here.
  */
 export async function renewAccountByOperatorValidity(input: {
   account: string;
@@ -6962,54 +6956,10 @@ export async function renewAccountByOperatorValidity(input: {
   const account = input.account.trim();
   const validity = String(input.validity ?? "").trim().toUpperCase();
   if (!account) return { ok: false, code: "no_account" };
+  if (isCreateOnlyValidityValue(validity)) return { ok: false, code: "invalid" };
 
-  if (validity !== "FREE_TRIAL") {
-    const months = Number.parseInt(validity, 10);
-    return renewAccountByOperatorMonths({ account, months, debitUsername: input.debitUsername });
-  }
-
-  const stalker = getStalkerPool();
-  if (!stalker) return { ok: false, code: "no_stalker" };
-  const pool = getBillingPool();
-
-  const [stUsers] = await stalker.execute<RowDataPacket[]>("SELECT id, mac FROM users WHERE login = :l LIMIT 1", { l: account });
-  if (!stUsers.length) return { ok: false, code: "no_stalker_user" };
-  const stalkerMac = stUsers[0].mac != null ? String(stUsers[0].mac) : "";
-
-  const [accRows] = await pool.execute<RowDataPacket[]>("SELECT expires FROM accounts WHERE account = :a LIMIT 1", { a: account });
-  if (!accRows.length) return { ok: false, code: "no_account" };
-  const expiresStr = accRows[0].expires != null ? String(accRows[0].expires) : "";
-  const baseDate = expiresStr ? new Date(expiresStr.replace(" ", "T")) : undefined;
-  const expiry_date = computeExpiryDatePhp("FREE_TRIAL", baseDate && Number.isFinite(baseDate.getTime()) ? baseDate : undefined);
-
-  // PHP controller free-trial restrictions (`is_retry_trial`, `number_retry_trial`).
-  const isRetryTrial = (await getConfigInt(pool, "is_retry_trial", 0)) === 1;
-  const numberRetryTrial = Math.max(0, await getConfigInt(pool, "number_retry_trial", 0));
-  const [usedRows] = await pool.execute<RowDataPacket[]>("SELECT COUNT(*) AS n FROM free_trial_users WHERE mac = :m", {
-    m: stalkerMac,
-  });
-  const usedTrialCount = Number(usedRows[0]?.n ?? 0);
-  if (!isRetryTrial && usedTrialCount > 0) return { ok: false, code: "trial_used" };
-  if (isRetryTrial && usedTrialCount >= numberRetryTrial) return { ok: false, code: "trial_limit" };
-
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-    await conn.execute("INSERT INTO free_trial_users (mac, free_trial_end_date) VALUES (:m, :e)", {
-      m: stalkerMac,
-      e: expiry_date,
-    });
-    await conn.execute("UPDATE accounts SET expires = :e WHERE account = :a", { e: expiry_date, a: account });
-    await conn.execute("UPDATE user_credit_summarize SET expiry_date = :e WHERE account = :a", { e: expiry_date, a: account });
-    await conn.commit();
-  } catch {
-    await conn.rollback();
-    return { ok: false, code: "db" };
-  } finally {
-    conn.release();
-  }
-
-  return { ok: true, mode: "trial" };
+  const months = Number.parseInt(validity, 10);
+  return renewAccountByOperatorMonths({ account, months, debitUsername: input.debitUsername });
 }
 
 function subtractMonthsPhp(datetimeLike: string, months: number): string {

@@ -3,8 +3,11 @@ import { buildMonthDeductionChargedMap } from "@/lib/creditDeductions";
 import {
   buildValidityOptions,
   buildValidityOptionsFromDeductionRows,
+  excludeCreateOnlyValidityOptions,
   filterCreateValidityOptionsByDebitCredits,
+  filterRenewValidityOptionsByDebitCredits,
   filterValidityOptionsByDebitCredits,
+  isCreateOnlyValidityValue,
 } from "@/lib/validityOptions";
 
 describe("buildMonthDeductionChargedMap", () => {
@@ -44,19 +47,43 @@ describe("buildValidityOptions", () => {
 });
 
 describe("filterValidityOptionsByDebitCredits", () => {
-  const options = buildValidityOptions({}, { monthFree: false, maxMonths: 24 });
+  const options = buildValidityOptions({}, { monthFree: true, maxMonths: 24 });
 
   it("returns no options until wallet balance is known", () => {
     expect(filterValidityOptionsByDebitCredits(options, null)).toEqual([]);
     expect(filterValidityOptionsByDebitCredits(options, undefined)).toEqual([]);
   });
 
-  it("caps paid options by debit wallet balance", () => {
+  it("caps paid options by debit wallet balance and excludes create-only rows", () => {
     const affordable = filterValidityOptionsByDebitCredits(options, 16);
-    const paid = affordable.filter((o) => o.value !== "FREE_TRIAL" && o.value !== "1_MONTH_FREE");
-    expect(paid.some((o) => o.value === "16")).toBe(true);
-    expect(paid.some((o) => o.value === "17")).toBe(false);
-    expect(paid.some((o) => o.value === "24" && o.label.match(/(\d+)\s*credit/i)?.[1] === "24")).toBe(false);
+    expect(affordable.some((o) => o.value === "FREE_TRIAL")).toBe(false);
+    expect(affordable.some((o) => o.value === "1_MONTH_FREE")).toBe(false);
+    expect(affordable.some((o) => o.value === "16")).toBe(true);
+    expect(affordable.some((o) => o.value === "17")).toBe(false);
+    expect(affordable.some((o) => o.value === "24" && o.label.match(/(\d+)\s*credit/i)?.[1] === "24")).toBe(false);
+  });
+});
+
+describe("filterRenewValidityOptionsByDebitCredits", () => {
+  const options = buildValidityOptions({}, { monthFree: true, maxMonths: 3 });
+
+  it("matches paid-only debit filtering", () => {
+    const renew = filterRenewValidityOptionsByDebitCredits(options, 2);
+    expect(renew.some((o) => o.value === "FREE_TRIAL")).toBe(false);
+    expect(renew.some((o) => o.value === "1_MONTH_FREE")).toBe(false);
+    expect(renew.some((o) => o.value === "2")).toBe(true);
+    expect(renew.some((o) => o.value === "3")).toBe(false);
+  });
+});
+
+describe("excludeCreateOnlyValidityOptions", () => {
+  it("removes trial and free month rows", () => {
+    const options = buildValidityOptions({}, { monthFree: true, maxMonths: 2 });
+    const filtered = excludeCreateOnlyValidityOptions(options);
+    expect(isCreateOnlyValidityValue("FREE_TRIAL")).toBe(true);
+    expect(isCreateOnlyValidityValue("1_month_free")).toBe(true);
+    expect(filtered.some((o) => isCreateOnlyValidityValue(o.value))).toBe(false);
+    expect(filtered.some((o) => o.value === "1")).toBe(true);
   });
 });
 

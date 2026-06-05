@@ -27,6 +27,12 @@ describe("bestOffWalletAverageCredits", () => {
 });
 
 describe("filterBulkRenewValidityOptions", () => {
+  const withCreateOnly: ValidityOption[] = [
+    { value: "FREE_TRIAL", label: "2 days trial" },
+    { value: "1_MONTH_FREE", label: "1 month free (bonus)" },
+    ...options,
+  ];
+
   it("shows periods up to the best-off dealer average", () => {
     const filtered = filterBulkRenewValidityOptions(options, [
       { debitUsername: "B", debitCredits: 100, accountCount: 30 },
@@ -37,6 +43,14 @@ describe("filterBulkRenewValidityOptions", () => {
     expect(filtered.some((o) => o.value === "4")).toBe(true);
     expect(filtered.some((o) => o.value === "12")).toBe(false);
     expect(filtered.some((o) => o.value === "24")).toBe(false);
+  });
+
+  it("excludes create-only trial and free month options", () => {
+    const filtered = filterBulkRenewValidityOptions(withCreateOnly, [
+      { debitUsername: "C", debitCredits: 50, accountCount: 10 },
+    ]);
+    expect(filtered.some((o) => o.value === "FREE_TRIAL")).toBe(false);
+    expect(filtered.some((o) => o.value === "1_MONTH_FREE")).toBe(false);
   });
 
   it("still lists periods when another wallet has zero credits", () => {

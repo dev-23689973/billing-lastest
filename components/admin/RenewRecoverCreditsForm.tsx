@@ -11,6 +11,7 @@ import { FormSelect } from "@/components/forms/form-select";
 import { NativeSelect } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { ValidityOption } from "@/lib/validityOptions";
+import { excludeCreateOnlyValidityOptions } from "@/lib/validityOptions";
 
 type Props = {
   account: string;
@@ -33,7 +34,10 @@ export function RenewRecoverCreditsForm({
 }: Props) {
   const [type, setType] = useState<"RENEW" | "RCDT">("RENEW");
 
-  const renewOptions = useMemo(() => validityOptions, [validityOptions]);
+  const renewOptions = useMemo(
+    () => excludeCreateOnlyValidityOptions(validityOptions),
+    [validityOptions],
+  );
 
   return (
     <form action={action}>

@@ -2,6 +2,16 @@ import { buildMonthDeductionChargedMap, CREDIT_DEDUCTION_MAX_VALIDITY_MONTHS } f
 
 export type ValidityOption = { value: string; label: string };
 
+/** Trial / free-month — create-user only; excluded from individual and bulk renew UI. */
+export function isCreateOnlyValidityValue(value: string): boolean {
+  const v = String(value ?? "").trim().toUpperCase();
+  return v === "FREE_TRIAL" || v === "1_MONTH_FREE";
+}
+
+export function excludeCreateOnlyValidityOptions(options: ValidityOption[]): ValidityOption[] {
+  return options.filter((o) => !isCreateOnlyValidityValue(o.value));
+}
+
 export type BuildValidityOptionsInput = {
   monthFree?: boolean;
   maxMonths?: number;
@@ -75,7 +85,7 @@ export function validityOptionChargedCredits(option: ValidityOption): number {
   return Number.isFinite(months) ? months : Number.POSITIVE_INFINITY;
 }
 
-/** Paid renew options the debit wallet can afford (`charged credits` ≤ balance). */
+/** Paid options the debit wallet can afford (`charged credits` ≤ balance). */
 export function filterValidityOptionsByDebitCredits(
   options: ValidityOption[],
   debitCredits: number | null | undefined,
@@ -83,12 +93,18 @@ export function filterValidityOptionsByDebitCredits(
   if (debitCredits == null || !Number.isFinite(debitCredits)) return [];
   const balance = Math.max(0, Math.floor(debitCredits));
   return options.filter((o) => {
+    if (isCreateOnlyValidityValue(o.value)) return false;
     const charged = validityOptionChargedCredits(o);
-    if (o.value === "FREE_TRIAL" || o.value === "1_MONTH_FREE") {
-      return charged === 0 && balance > 0;
-    }
     return Number.isFinite(charged) && charged >= 1 && charged <= balance;
   });
+}
+
+/** Renew dropdown: paid periods only, capped by debit wallet balance. */
+export function filterRenewValidityOptionsByDebitCredits(
+  options: ValidityOption[],
+  debitCredits: number | null | undefined,
+): ValidityOption[] {
+  return filterValidityOptionsByDebitCredits(excludeCreateOnlyValidityOptions(options), debitCredits);
 }
 
 /**
