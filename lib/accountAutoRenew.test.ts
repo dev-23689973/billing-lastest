@@ -4,6 +4,8 @@ import {
   buildAutoRenewPeriodSelectOptions,
   clampAutoRenewPeriodSelection,
   computeAutoRenewUntilDate,
+  formatAutoRenewEnabledCellDisplay,
+  formatAutoRenewTotalMonthsLabel,
   formatAutoRenewUntilLabel,
   formatAutoRenewUntilMonthYear,
   formatAutoRenewUntilParts,
@@ -86,5 +88,13 @@ describe("accountAutoRenew set-auto-renew helpers", () => {
     expect(formatAutoRenewUntilMonthYear("2028-02-01 12:00:00", 9)).toMatch(/Nov 2028/i);
     expect(formatAutoRenewUntilMonthYear("2028-02-01", 9)).toBe("Nov 2028");
     expect(formatAutoRenewUntilParts("2028-02-01", 9)).toEqual({ month: "Nov", year: "2028" });
+  });
+
+  it("formats enabled cell as until date plus total months", () => {
+    expect(formatAutoRenewTotalMonthsLabel(11)).toBe("(12 months)");
+    expect(formatAutoRenewTotalMonthsLabel(0)).toBe("(1 month)");
+    const display = formatAutoRenewEnabledCellDisplay("2027-03-02 12:00:00", 11);
+    expect(display?.periodMonthsLabel).toBe("(12 months)");
+    expect(display?.untilDateLabel).toMatch(/Feb \d+, 2028/);
   });
 });

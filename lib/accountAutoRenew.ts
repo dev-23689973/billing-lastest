@@ -217,6 +217,30 @@ export function formatAutoRenewUntilParts(
   };
 }
 
+/** Total auto-renew period for display, e.g. “(12 months)”. */
+export function formatAutoRenewTotalMonthsLabel(cyclesRemaining: number): string {
+  const total = inferAutoRenewTotalCycles(true, Math.max(0, Math.floor(cyclesRemaining)));
+  return total === 1 ? "(1 month)" : `(${total} months)`;
+}
+
+export type AutoRenewEnabledCellDisplay = {
+  untilDateLabel: string;
+  periodMonthsLabel: string;
+};
+
+/** Enabled auto-renew table cell: until date + total period in months. */
+export function formatAutoRenewEnabledCellDisplay(
+  expiresAt: string | null | undefined,
+  cyclesRemaining: number,
+): AutoRenewEnabledCellDisplay | null {
+  const untilDateLabel = formatAutoRenewUntilLabel(expiresAt, cyclesRemaining);
+  if (!untilDateLabel) return null;
+  return {
+    untilDateLabel,
+    periodMonthsLabel: formatAutoRenewTotalMonthsLabel(cyclesRemaining),
+  };
+}
+
 /** Compact “Nov 2028” label for auto-renew table cells. */
 export function formatAutoRenewUntilMonthYear(
   expiresAt: string | null | undefined,

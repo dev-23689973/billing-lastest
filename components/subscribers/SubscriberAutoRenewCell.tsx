@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { CircleOff } from "lucide-react";
 import { toast } from "sonner";
-import { formatAutoRenewUntilParts } from "@/lib/accountAutoRenew";
+import { formatAutoRenewEnabledCellDisplay } from "@/lib/accountAutoRenew";
 import { cn } from "@/lib/cn";
 import { rsIconSm, rsTextCaption } from "@/lib/ui/responsiveScale";
 
@@ -26,10 +26,34 @@ const compactDisabledPillClass =
   "inline-flex h-8 min-w-[2.35rem] shrink-0 cursor-pointer items-center justify-center rounded-full border border-slate-400/45 bg-slate-100/90 px-2 text-[10px] font-bold leading-none tracking-wide text-slate-600 transition-colors hover:border-slate-500/55 hover:bg-slate-200 hover:text-slate-900 dark:border-slate-500/45 dark:bg-slate-800/55 dark:text-slate-200 dark:hover:border-slate-400/60 dark:hover:bg-slate-700/70 dark:hover:text-white";
 
 const enabledDateClass = "text-cyan-800 dark:text-cyan-200";
-const enabledStatusClass = "text-emerald-700 dark:text-emerald-300";
+const enabledPeriodClass = "text-emerald-700 dark:text-emerald-300";
 
 const enabledTextHoverClass =
   "rounded-md px-1.5 py-1 transition-colors hover:bg-muted/35 dark:hover:bg-muted/25";
+
+function SubscriberAutoRenewEnabledContent({
+  expires,
+  cyclesRemaining,
+  compact = false,
+}: {
+  expires: string | null;
+  cyclesRemaining: number;
+  compact?: boolean;
+}) {
+  const display = formatAutoRenewEnabledCellDisplay(expires, cyclesRemaining);
+  const textClass = compact ? "text-[9px] leading-tight" : rsTextCaption;
+
+  return (
+    <div className={cn("flex shrink-0 flex-col items-center text-center", enabledTextHoverClass)}>
+      <span className={cn(textClass, "font-semibold leading-none", enabledDateClass)}>
+        {display?.untilDateLabel ?? "—"}
+      </span>
+      <span className={cn(textClass, "mt-0.5 font-medium leading-none", enabledPeriodClass)}>
+        {display?.periodMonthsLabel ?? "—"}
+      </span>
+    </div>
+  );
+}
 
 function SubscriberAutoRenewEnabledCard({
   expires,
@@ -44,28 +68,17 @@ function SubscriberAutoRenewEnabledCard({
   onDisableClick?: () => void;
   className?: string;
 }) {
-  const untilParts = formatAutoRenewUntilParts(expires, cyclesRemaining);
-  const untilLabel = untilParts ? `${untilParts.month} ${untilParts.year}` : "—";
+  const display = formatAutoRenewEnabledCellDisplay(expires, cyclesRemaining);
+  const title = display
+    ? `Auto renewal enabled until ${display.untilDateLabel} ${display.periodMonthsLabel}`
+    : "Auto renewal enabled";
 
   return (
     <div
       className={cn("inline-flex w-fit max-w-full items-center gap-0.5 py-0.5", className)}
-      title={`Auto renewal enabled until ${untilLabel}`}
+      title={title}
     >
-      <div className={cn("flex shrink-0 flex-col items-center text-center", enabledTextHoverClass)}>
-        <span className={cn(rsTextCaption, "font-semibold leading-none", enabledDateClass)}>
-          {untilParts ? (
-            <>
-              <span>{untilParts.month}</span> <span>{untilParts.year}</span>
-            </>
-          ) : (
-            "—"
-          )}
-        </span>
-        <span className={cn(rsTextCaption, "mt-0.5 font-medium leading-none", enabledStatusClass)}>
-          Enabled
-        </span>
-      </div>
+      <SubscriberAutoRenewEnabledContent expires={expires} cyclesRemaining={cyclesRemaining} />
       {onDisableClick ? (
         <button
           type="button"
@@ -102,29 +115,17 @@ function SubscriberAutoRenewEnabledCompact({
   onDisableClick?: () => void;
   className?: string;
 }) {
-  const untilParts = formatAutoRenewUntilParts(expires, cyclesRemaining);
-  const untilLabel = untilParts ? `${untilParts.month} ${untilParts.year}` : "—";
-  const shortYear = untilParts ? untilParts.year.slice(-2) : null;
+  const display = formatAutoRenewEnabledCellDisplay(expires, cyclesRemaining);
+  const title = display
+    ? `Auto renewal enabled until ${display.untilDateLabel} ${display.periodMonthsLabel}`
+    : "Auto renewal enabled";
 
   return (
     <div
-      className={cn("inline-flex h-8 w-fit max-w-full items-center justify-center gap-0.5", className)}
-      title={`Auto renewal enabled until ${untilLabel}`}
+      className={cn("inline-flex w-fit max-w-full items-center justify-center gap-0.5 py-0.5", className)}
+      title={title}
     >
-      <div className="flex shrink-0 flex-col items-center justify-center text-center leading-none">
-        <span className="text-[9px] font-semibold text-cyan-800 dark:text-cyan-200">
-          {untilParts ? (
-            <>
-              {untilParts.month} &apos;{shortYear}
-            </>
-          ) : (
-            "—"
-          )}
-        </span>
-        <span className="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
-          On
-        </span>
-      </div>
+      <SubscriberAutoRenewEnabledContent expires={expires} cyclesRemaining={cyclesRemaining} compact />
       {onDisableClick ? (
         <button
           type="button"

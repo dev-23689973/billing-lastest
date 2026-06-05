@@ -17,10 +17,7 @@ describe("scheduleFlashToastItems", () => {
     const key = flashToastKey("/admin/settings", "ok=1", items);
     scheduleFlashToastItems(key, items);
     scheduleFlashToastItems(key, items);
-    await new Promise((r) => queueMicrotask(r ));
+    await new Promise((r) => queueMicrotask(r));
     expect(showFlashToastItems).toHaveBeenCalledTimes(1);
   });
 });
-/**
- * @vitest-environment jsdom
- */
