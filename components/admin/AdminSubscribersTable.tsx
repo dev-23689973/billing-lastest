@@ -2200,6 +2200,7 @@ export function AdminSubscribersTable({
             setAutoRenewModalTarget({
               account: detailRow.account,
               displayName: detailRow.full_name ?? detailRow.username ?? detailRow.account,
+              accountActive: detailRow.status === 0,
             })
           }
           onEdit={() => setDetailEditOpen(true)}
