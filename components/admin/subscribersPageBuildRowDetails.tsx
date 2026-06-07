@@ -96,6 +96,8 @@ function renderDetailValue(
       );
     case "mac":
       return <span className="font-mono text-muted-foreground">{row.mac || "—"}</span>;
+    case "domain":
+      return <span className="text-muted-foreground">{row.domain?.trim() || "—"}</span>;
     case "parents":
       return subscriberBillingOwner(row)?.login ?? "—";
     case "autoRenew":

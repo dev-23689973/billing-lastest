@@ -184,7 +184,7 @@ export function OperatorUserEditPage({
         </Panel>
       </div>
       <aside className="space-y-4">
-        <StbInfoSummary u={{ id: u.id, packageLabel: u.packageLabel, stb: u.stb }} />
+        <StbInfoSummary u={{ id: u.id, packageLabel: u.packageLabel, domain: u.domain, stb: u.stb }} />
         <Panel title="Renew / recover">
           <RenewRecoverCreditsForm
             account={u.id}

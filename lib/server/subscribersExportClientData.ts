@@ -105,7 +105,7 @@ export async function exportSubscribersCsvForClient(
       }),
     );
     const { csv, filename } = buildCsv(
-      ["User ID", "Username", "Subscriber", "Owner", "Package", "MAC", "Status", "Expiry", "Device online"],
+      ["User ID", "Username", "Subscriber", "Owner", "Package", "MAC", "Domain", "Status", "Expiry", "Device online"],
       rows,
       (r) => [
         r.stalkerUserId != null && r.stalkerUserId > 0 ? String(r.stalkerUserId) : "",
@@ -114,6 +114,7 @@ export async function exportSubscribersCsvForClient(
         rowOwner(r),
         r.packageName ?? "",
         r.mac ?? "",
+        r.domain ?? "",
         rowStatusLabel(r),
         r.expires ? String(r.expires).slice(0, 10) : "",
         rowOnlineLabel(r),
@@ -140,7 +141,7 @@ export async function exportSubscribersCsvForClient(
       }),
     );
     const { csv, filename } = buildCsv(
-      ["Account", "Subscriber", "Reseller", "Dealer", "Package", "MAC", "Status", "Expiry", "Device online"],
+      ["Account", "Subscriber", "Reseller", "Dealer", "Package", "MAC", "Domain", "Status", "Expiry", "Device online"],
       rows,
       (r) => [
         r.account,
@@ -149,6 +150,7 @@ export async function exportSubscribersCsvForClient(
         r.dealer ?? "",
         r.packageName ?? "",
         r.mac ?? "",
+        r.domain ?? "",
         rowStatusLabel(r),
         r.expires ? String(r.expires).slice(0, 10) : "",
         rowOnlineLabel(r),
@@ -174,7 +176,7 @@ export async function exportSubscribersCsvForClient(
       }),
     );
     const { csv, filename } = buildCsv(
-      ["Account", "Subscriber", "Dealer", "Package", "MAC", "Status", "Expiry", "Device online"],
+      ["Account", "Subscriber", "Dealer", "Package", "MAC", "Domain", "Status", "Expiry", "Device online"],
       rows,
       (r) => [
         r.account,
@@ -182,6 +184,7 @@ export async function exportSubscribersCsvForClient(
         r.dealer ?? "",
         r.packageName ?? "",
         r.mac ?? "",
+        r.domain ?? "",
         rowStatusLabel(r),
         r.expires ? String(r.expires).slice(0, 10) : "",
         rowOnlineLabel(r),
@@ -205,13 +208,14 @@ export async function exportSubscribersCsvForClient(
     }),
   );
   const { csv, filename } = buildCsv(
-    ["Account", "Subscriber", "Package", "MAC", "Status", "Expiry", "Device online"],
+    ["Account", "Subscriber", "Package", "MAC", "Domain", "Status", "Expiry", "Device online"],
     rows,
     (r) => [
       r.account,
       r.full_name ?? "",
       r.packageName ?? "",
       r.mac ?? "",
+      r.domain ?? "",
       rowStatusLabel(r),
       r.expires ? String(r.expires).slice(0, 10) : "",
       rowOnlineLabel(r),

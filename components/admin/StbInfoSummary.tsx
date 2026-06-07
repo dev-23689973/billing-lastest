@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 export type StbInfoSummarySlice = {
   id: string;
   packageLabel: string;
+  domain?: string;
   parentPin?: string;
   stb: { online: boolean; ip: string; firmware: string; expiry: string; watching: string };
 };
@@ -39,6 +40,7 @@ export function StbInfoSummary({
 }) {
   const pkg = u.packageLabel?.trim() || "—";
   const pin = u.parentPin?.trim() || "—";
+  const domain = u.domain?.trim() || "—";
 
   return (
     <Panel
@@ -66,6 +68,9 @@ export function StbInfoSummary({
         </Stat>
         <Stat label="Package">
           <Value>{pkg}</Value>
+        </Stat>
+        <Stat label="Domain">
+          <Value mono>{domain}</Value>
         </Stat>
         <Stat label="IP">
           <Value mono>{u.stb.ip}</Value>

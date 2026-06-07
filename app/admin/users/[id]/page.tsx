@@ -166,7 +166,7 @@ export default async function EditUserPage({ params, searchParams }: Props) {
         </Panel>
       </div>
       <aside className="space-y-4 lg:space-y-5">
-        <StbInfoSummary u={{ id: u.id, packageLabel: u.packageLabel, stb: u.stb }}>
+        <StbInfoSummary u={{ id: u.id, packageLabel: u.packageLabel, domain: u.domain, stb: u.stb }}>
           <details className="group rounded-xl border border-border/50 bg-muted/10 open:bg-muted/15">
             <summary className="cursor-pointer list-none px-3 py-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground [&::-webkit-details-marker]:hidden">
               <span className="inline-flex items-center gap-2">

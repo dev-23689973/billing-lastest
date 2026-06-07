@@ -153,6 +153,7 @@ function SubscribersFetchModalTable({
             {hasColumn("name") ? sortableHeader("name") : null}
             {hasColumn("username") ? sortableHeader("username") : null}
             {hasColumn("mac") ? sortableHeader("mac") : null}
+            {hasColumn("domain") ? sortableHeader("domain") : null}
             {hasColumn("parents") ? sortableHeader("parents") : null}
             {hasColumn("status") ? sortableHeader("status") : null}
             {hasColumn("state") ? sortableHeader("state") : null}
@@ -210,6 +211,11 @@ function SubscribersFetchModalTable({
                   {hasColumn("mac") ? (
                     <td className={dataTd("mac", "font-mono text-xs text-muted-foreground")}>
                       <span className="mx-auto block min-w-0 max-w-full truncate text-center">{r.mac || "—"}</span>
+                    </td>
+                  ) : null}
+                  {hasColumn("domain") ? (
+                    <td className={dataTd("domain", "text-xs text-muted-foreground")} title={r.domain || undefined}>
+                      <span className="mx-auto block min-w-0 max-w-full truncate text-center">{r.domain?.trim() || "—"}</span>
                     </td>
                   ) : null}
                   {hasColumn("parents") ? (

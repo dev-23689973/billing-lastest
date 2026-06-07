@@ -35,6 +35,7 @@ export type SubscriberDetailModalData = {
   dealer?: string;
   packageLabel?: string;
   stb?: { online?: boolean; ip?: string; firmware?: string; expiry?: string; watching?: string };
+  domain?: string;
   transactionSummary?: {
     total?: number;
     creditCount?: number;
@@ -206,6 +207,10 @@ export function SubscriberDetailViewModal({
                       </dd>
                     </div>
                     <DetailRow label="MAC" value={detailData?.mac || row.mac || "—"} />
+                    <DetailRow
+                      label="Domain"
+                      value={detailData?.domain?.trim() || row.domain?.trim() || "—"}
+                    />
                     <DetailRow label="IP" value={detailData?.ip || row.ip || detailData?.stb?.ip || "—"} />
                     <DetailRow label="Firmware" value={detailData?.stb?.firmware || "—"} />
                     <DetailRow label="Watching" value={detailData?.stb?.watching || "—"} />

@@ -6,6 +6,7 @@ export type SubscribersUserColumnKey =
   | "name"
   | "username"
   | "mac"
+  | "domain"
   | "parents"
   | "status"
   | "state"
@@ -18,6 +19,7 @@ export const SUBSCRIBERS_USER_TABLE_COLUMNS: { key: SubscribersUserColumnKey; la
   { key: "name", label: "Name" },
   { key: "username", label: "Username" },
   { key: "mac", label: "MAC ID" },
+  { key: "domain", label: "Domain" },
   { key: "parents", label: "Parents" },
   { key: "status", label: "Status" },
   { key: "state", label: "State" },
@@ -38,6 +40,7 @@ export const SUBSCRIBERS_USER_COLUMN_SHORT_LABELS: Record<SubscribersUserColumnK
   name: "Name",
   username: "User",
   mac: "MAC",
+  domain: "Domain",
   parents: "Owner",
   status: "St",
   state: "State",
@@ -51,6 +54,7 @@ export const SUBSCRIBERS_USER_COLUMN_LAYOUT_WEIGHT: Record<SubscribersUserColumn
   name: 10,
   username: 8,
   mac: 11,
+  domain: 8,
   parents: 9,
   status: 6,
   state: 14,

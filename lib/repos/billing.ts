@@ -2647,6 +2647,8 @@ export type AccountListRow = {
   nowPlaying: string | null;
   /** Stalker `users.id` where `users.login` = `account`; null when Stalker off or no row. */
   stalkerUserId: number | null;
+  /** Stalker `users.domain` where `users.login` = `account`; null when unknown or Stalker off. */
+  domain: string | null;
 };
 
 type AccountScope = { ownerType: "ROOT" | "MNGR" | "SRSLR" | "RSLR"; ownerUsername: string };
@@ -2977,6 +2979,30 @@ async function batchStalkerNowPlayingForAccounts(accounts: string[]): Promise<Ma
     }
   } catch (err) {
     console.warn("[batchStalkerNowPlayingForAccounts]", mysqlMessage(err));
+  }
+  return result;
+}
+
+async function batchStalkerDomainsForAccounts(accounts: string[]): Promise<Map<string, string | null>> {
+  const result = new Map<string, string | null>();
+  const unique = [...new Set(accounts.map((a) => a.trim()).filter(Boolean))];
+  for (const u of unique) result.set(u, null);
+  const stalker = getStalkerPool();
+  if (!stalker || unique.length === 0) return result;
+  const ph = unique.map(() => "?").join(",");
+  try {
+    const [rows] = await stalker.query<RowDataPacket[]>(
+      `SELECT login, domain FROM users WHERE login IN (${ph})`,
+      unique,
+    );
+    for (const r of rows) {
+      const login = r.login != null ? String(r.login) : "";
+      if (!login) continue;
+      const domain = r.domain != null ? String(r.domain).trim() : "";
+      result.set(login, domain || null);
+    }
+  } catch (err) {
+    console.warn("[batchStalkerDomainsForAccounts]", mysqlMessage(err));
   }
   return result;
 }
@@ -3335,6 +3361,7 @@ export async function listAccountsPagedScoped(input: {
     receiverKeepAlive: null,
     nowPlaying: null,
     stalkerUserId: null,
+    domain: null,
   }));
 
   const stalker = getStalkerPool();
@@ -3343,13 +3370,15 @@ export async function listAccountsPagedScoped(input: {
   let recvMap: Map<string, boolean | null> | null = null;
   let recvKeepAliveMap: Map<string, string | null> | null = null;
   let stalkerIdMap: Map<string, number> | null = null;
+  let domainMap: Map<string, string | null> | null = null;
   let nowPlayingMap: Map<string, string | null> | null = null;
   if (stalker) {
-    [pkgMap, recvMap, recvKeepAliveMap, stalkerIdMap] = await Promise.all([
+    [pkgMap, recvMap, recvKeepAliveMap, stalkerIdMap, domainMap] = await Promise.all([
       batchStalkerTariffLabelsForAccounts(accountsOnPage),
       batchStalkerReceiverOnlineForAccounts(accountsOnPage),
       batchStalkerReceiverKeepAliveForAccounts(mapped.map((r) => ({ account: r.account, mac: r.mac }))),
       batchStalkerUserIdsForAccounts(accountsOnPage),
+      batchStalkerDomainsForAccounts(accountsOnPage),
     ]);
     const onlineAccounts = mapped
       .filter((r) => (r.receiverOnline ?? (recvMap ? (recvMap.get(r.account) ?? null) : null)) === true)
@@ -3367,6 +3396,7 @@ export async function listAccountsPagedScoped(input: {
       receiverKeepAlive: recvKeepAliveMap ? (recvKeepAliveMap.get(r.account) ?? null) : null,
       nowPlaying: online === true ? playing : null,
       stalkerUserId: stalkerIdMap?.get(r.account) ?? null,
+      domain: domainMap ? (domainMap.get(r.account) ?? null) : null,
     };
   });
 
@@ -4925,6 +4955,11 @@ function formatBillingExpiryForStb(expires: unknown): string {
   return s;
 }
 
+function stalkerUserDomain(stalkerUser: RowDataPacket | undefined): string {
+  if (!stalkerUser || stalkerUser.domain == null) return "";
+  return String(stalkerUser.domain).trim();
+}
+
 function buildStbSnapshotFromStalkerUserRow(stalkerUser: RowDataPacket | undefined, billingExpires: unknown) {
   const expiry = formatBillingExpiryForStb(billingExpires);
   const dash = "—";
@@ -5049,6 +5084,7 @@ export async function getUserForEdit(account: string) {
     parentPin,
     packageLabel,
     stalkerUserId,
+    domain: stalkerUserDomain(stalkerUserRow),
     customPackagePlanId,
     addonPackages,
     subscribedPackageIds,

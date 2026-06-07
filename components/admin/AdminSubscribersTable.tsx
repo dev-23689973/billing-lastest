@@ -258,6 +258,7 @@ type DetailUser = {
   dealer: string;
   tariffPlanId: number;
   packageLabel: string;
+  domain: string;
   stalkerUserId: number | null;
   comments: string;
   subscribedPackageIds: number[];
@@ -753,7 +754,8 @@ export function AdminSubscribersTable({
       fresh.status !== detailRow.status ||
       fresh.lastActive !== detailRow.lastActive ||
       fresh.phone !== detailRow.phone ||
-      fresh.mac !== detailRow.mac;
+      fresh.mac !== detailRow.mac ||
+      fresh.domain !== detailRow.domain;
     if (!rowChanged) return;
     const timer = window.setTimeout(() => {
       setDetailRow(fresh);
@@ -1649,6 +1651,13 @@ export function AdminSubscribersTable({
                       </Link>
                     </th>
                   ) : null}
+                  {hasColumn("domain") ? (
+                    <th className={dataTh("domain")}>
+                      <span className={subscribersPageHeaderLabelWrapClass("domain")}>
+                        {columnLabel("domain", "Domain")}
+                      </span>
+                    </th>
+                  ) : null}
                   {hasColumn("parents") ? (
                     <th className={dataTh("parents")}>
                       <span className={subscribersPageHeaderLabelWrapClass("parents")}>
@@ -1819,6 +1828,11 @@ export function AdminSubscribersTable({
                             </div>
                           </td>
                         ) : null}
+                        {hasColumn("domain") ? (
+                          <td className={dataTd("domain", "text-xs text-muted-foreground")} title={r.domain || undefined}>
+                            <span className="mx-auto block min-w-0 max-w-full truncate text-center">{r.domain?.trim() || "—"}</span>
+                          </td>
+                        ) : null}
                         {hasColumn("parents") ? (
                           <td className={dataTd("parents", "text-xs text-muted-foreground")}>
                             <div className="flex w-full justify-center">
@@ -1961,6 +1975,13 @@ export function AdminSubscribersTable({
                     </Link>
                   </th>
                 ) : null}
+                {hasColumn("domain") ? (
+                  <th className={th(subscribersPageCellAlign("domain"))}>
+                    <span className={subscribersPageHeaderLabelWrapClass("domain")}>
+                      {columnLabel("domain", "Domain")}
+                    </span>
+                  </th>
+                ) : null}
                 {hasColumn("parents") ? (
                   <th className={th(subscribersPageCellAlign("parents"))}>
                     <span className={subscribersPageHeaderLabelWrapClass("parents")}>
@@ -2086,6 +2107,11 @@ export function AdminSubscribersTable({
                               onInlineSave={applyInlineUserSave}
                             />
                           </div>
+                        </td>
+                      ) : null}
+                      {hasColumn("domain") ? (
+                        <td className={legacyTd("domain", "text-xs text-muted-foreground")} title={r.domain || undefined}>
+                          <span className="mx-auto block min-w-0 max-w-full truncate text-center">{r.domain?.trim() || "—"}</span>
                         </td>
                       ) : null}
                       {hasColumn("parents") ? (

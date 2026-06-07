@@ -40,6 +40,7 @@
 .subscribers-page-col-name,
 .subscribers-page-col-username,
 .subscribers-page-col-mac,
+.subscribers-page-col-domain,
 .subscribers-page-col-parents {
   text-align: center !important;
 }
@@ -47,12 +48,14 @@
 .subscribers-page-table-scroll thead .subscribers-page-col-name,
 .subscribers-page-table-scroll thead .subscribers-page-col-username,
 .subscribers-page-table-scroll thead .subscribers-page-col-mac,
+.subscribers-page-table-scroll thead .subscribers-page-col-domain,
 .subscribers-page-table-scroll thead .subscribers-page-col-parents {
   text-align: center !important;
 }
 .subscribers-page-col-name { min-width: 7rem; }
 .subscribers-page-col-username { min-width: 6rem; }
 .subscribers-page-col-mac { min-width: 7rem; }
+.subscribers-page-col-domain { min-width: 6rem; }
 .subscribers-page-col-parents { min-width: 6rem; }
 .subscribers-page-col-status { min-width: 5rem; }
 .subscribers-page-col-state { min-width: 9rem; max-width: 14rem; }
@@ -244,6 +247,9 @@
   display: none !important;
 }
 .subscribers-page-table-scroll[data-subscribers-page-hidden~="mac"] .subscribers-page-hide-mac {
+  display: none !important;
+}
+.subscribers-page-table-scroll[data-subscribers-page-hidden~="domain"] .subscribers-page-hide-domain {
   display: none !important;
 }
 .subscribers-page-table-scroll[data-subscribers-page-hidden~="parents"] .subscribers-page-hide-parents {
