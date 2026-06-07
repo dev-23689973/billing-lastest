@@ -1051,14 +1051,14 @@ export function AdminSubscribersTable({
         }
         placeholder={
           isDealerPortal
-            ? "Search name, username, or MAC…"
+            ? "Search name, username, MAC, or domain…"
             : isResellerPortal
-              ? "Search name, username, MAC, or owner…"
+              ? "Search name, username, MAC, owner, or domain…"
               : isManagerPortal
-                ? "Search name, username, MAC, or owner…"
+                ? "Search name, username, MAC, owner, or domain…"
                 : embedded
-                  ? "Search name, user, MAC, owner, or user ID…"
-                  : "Search name, username, MAC, owner, or user ID…"
+                  ? "Search name, user, MAC, owner, user ID, or domain…"
+                  : "Search name, username, MAC, owner, user ID, or domain…"
         }
       />
       <Search

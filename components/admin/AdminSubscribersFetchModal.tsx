@@ -384,7 +384,7 @@ export function AdminSubscribersFetchModal({
                         e.preventDefault();
                         applySearchNow(searchInput);
                       }}
-                      placeholder="Name, username, MAC…"
+                      placeholder="Name, username, MAC, or domain…"
                       autoComplete="off"
                       className={cn(managersToolbarSearchInputClass, "w-full")}
                     />

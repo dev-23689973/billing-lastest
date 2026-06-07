@@ -58,6 +58,7 @@ import {
   findAccountLoginsByStalkerUserIdSearch,
   isStalkerUserIdSearchQuery,
 } from "@/lib/repos/stalkerUserIdSearch";
+import { findAccountLoginsByStalkerDomainSearch } from "@/lib/repos/stalkerDomainSearch";
 import {
   formatStaffCreatedAtDisplay,
   normalizeStaffCreatedAtDbValue,
@@ -2797,14 +2798,24 @@ export async function countActiveClientsForPromo2(scope: { kind: "MNGR" | "SRSLR
   return Number(rows[0]?.c ?? 0);
 }
 
-async function resolveAdminStalkerIdSearchLogins(
+async function resolveStalkerListSearchOptions(
   ownerType: "ROOT" | "MNGR" | "SRSLR" | "RSLR",
   search: string | undefined | null,
-): Promise<string[] | undefined> {
-  if (ownerType !== "ROOT") return undefined;
+): Promise<AccountListSearchOptions | undefined> {
   const q = search?.trim() ?? "";
-  if (!q || !isStalkerUserIdSearchQuery(q)) return undefined;
-  return findAccountLoginsByStalkerUserIdSearch(q);
+  if (!q) return undefined;
+
+  const [stalkerIdAccountLogins, stalkerDomainAccountLogins] = await Promise.all([
+    ownerType === "ROOT" && isStalkerUserIdSearchQuery(q)
+      ? findAccountLoginsByStalkerUserIdSearch(q)
+      : Promise.resolve([] as string[]),
+    findAccountLoginsByStalkerDomainSearch(q),
+  ]);
+
+  const options: AccountListSearchOptions = {};
+  if (stalkerIdAccountLogins.length > 0) options.stalkerIdAccountLogins = stalkerIdAccountLogins;
+  if (stalkerDomainAccountLogins.length > 0) options.stalkerDomainAccountLogins = stalkerDomainAccountLogins;
+  return Object.keys(options).length > 0 ? options : undefined;
 }
 
 function accountListWhereClause(
@@ -3211,9 +3222,7 @@ export async function listAccountsPagedScoped(input: {
     100,
     Math.max(5, Math.floor(Number.isFinite(pageSizeNum) && pageSizeNum > 0 ? pageSizeNum : 20)),
   );
-  const stalkerIdAccountLogins = await resolveAdminStalkerIdSearchLogins(input.ownerType, input.search);
-  const searchOptions: AccountListSearchOptions | undefined =
-    stalkerIdAccountLogins != null ? { stalkerIdAccountLogins } : undefined;
+  const searchOptions = await resolveStalkerListSearchOptions(input.ownerType, input.search);
   const { sql: whereSql, params: whereParams } = accountListWhereClause(
     input.status,
     input.search,

@@ -81,4 +81,24 @@ describe("accountListSearchWhereClause", () => {
     expect(params).toContain("alpha");
     expect(params).toContain("beta");
   });
+
+  it("includes Stalker domain account logins", () => {
+    const { sql, params } = accountListSearchWhereClause("example.com", {
+      stalkerDomainAccountLogins: ["user1", "user2"],
+    });
+    expect(sql).toContain("a.account IN (?, ?)");
+    expect(params).toContain("user1");
+    expect(params).toContain("user2");
+  });
+
+  it("merges Stalker id and domain account logins without duplicates", () => {
+    const { sql, params } = accountListSearchWhereClause("12345", {
+      stalkerIdAccountLogins: ["alpha", "beta"],
+      stalkerDomainAccountLogins: ["beta", "gamma"],
+    });
+    expect(sql).toContain("a.account IN (?, ?, ?)");
+    expect(params.filter((p) => p === "beta")).toHaveLength(1);
+    expect(params).toContain("alpha");
+    expect(params).toContain("gamma");
+  });
 });

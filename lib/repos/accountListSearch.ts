@@ -75,13 +75,21 @@ function accountTableFieldsLikeClause(likeTerm: string): { sql: string; params: 
 export type AccountListSearchOptions = {
   /** Admin: `accounts.account` values whose Stalker `users.id` matches the search digits. */
   stalkerIdAccountLogins?: string[];
+  /** `accounts.account` values whose Stalker `users.domain` matches the search text. */
+  stalkerDomainAccountLogins?: string[];
 };
 
-function appendStalkerIdAccountLogins(
+function appendStalkerAccountLogins(
   base: { sql: string; params: unknown[] },
-  stalkerIdAccountLogins: string[] | undefined,
+  options: AccountListSearchOptions | undefined,
 ): { sql: string; params: unknown[] } {
-  const logins = [...new Set((stalkerIdAccountLogins ?? []).map((a) => a.trim()).filter(Boolean))];
+  const logins = [
+    ...new Set(
+      [...(options?.stalkerIdAccountLogins ?? []), ...(options?.stalkerDomainAccountLogins ?? [])]
+        .map((a) => a.trim())
+        .filter(Boolean),
+    ),
+  ];
   if (logins.length < 1) return base;
   const ph = logins.map(() => "?").join(", ");
   return {
@@ -93,7 +101,7 @@ function appendStalkerIdAccountLogins(
 /**
  * Subscriber list search — limited to data shown in the Users table:
  * Name (`full_name`), Username (`account`), MAC, Parents (displayed owner login),
- * and optionally Stalker user id (admin User ID column).
+ * Stalker user id (admin User ID column), and Stalker domain.
  */
 export function accountListSearchWhereClause(
   search: string | undefined | null,
@@ -120,5 +128,5 @@ export function accountListSearchWhereClause(
     base = accountTableFieldsLikeClause(likeTerm);
   }
 
-  return appendStalkerIdAccountLogins(base, options?.stalkerIdAccountLogins);
+  return appendStalkerAccountLogins(base, options);
 }
