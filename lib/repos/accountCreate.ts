@@ -353,7 +353,7 @@ export async function createEndUserAccount(raw: CreateEndUserInput): Promise<Cre
   if (validity === "1_MONTH_FREE" && !raw.monthFreeEnabled) return { ok: false, code: "bad_validity" };
   if (validity !== "FREE_TRIAL" && validity !== "1_MONTH_FREE") {
     const m = Number.parseInt(validity, 10);
-    if (!Number.isFinite(m) || m < 1 || m > 24) return { ok: false, code: "bad_validity" };
+    if (!Number.isFinite(m) || m < 1 || m > 60) return { ok: false, code: "bad_validity" };
     validity = String(m);
   }
 
