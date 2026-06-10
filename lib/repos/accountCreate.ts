@@ -312,7 +312,8 @@ async function insertCreditSummarizeLikePhp(
   if (c > 5) {
     c = deductionMap[c] ?? c;
   }
-  const maxRec = recoverBonusEnabled ? Math.max(0, c - 1) : 0;
+  // Match renew (`renewAccountByOperatorMonths`): seed full charged credits; current-month holdback is applied in recover UI only.
+  const maxRec = recoverBonusEnabled ? Math.max(0, Math.floor(c)) : 0;
   await conn.execute(
     `INSERT INTO user_credit_summarize (account, start_date, max_credit_recoverable, expiry_date, updated_at)
      VALUES (:account, :start_date, :max_credit_recoverable, :expiry_date, :updated_at)`,
