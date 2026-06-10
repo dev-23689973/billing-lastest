@@ -1617,10 +1617,13 @@ async function loadRecoverConsumedGrantIds(
 ): Promise<Set<number>> {
   const out = new Set<number>();
 
+  // Only wallet DBIT rows count — inbound CRDT from downstream recover (e.g. reseller ← dealer)
+  // also embed `[recover_of_tx:N]` for the child's grant ids; those must not mark this user's grants consumed.
   const [taggedRows] = await conn.execute<RowDataPacket[]>(
     `SELECT remarks FROM transactions
-     WHERE remarks LIKE :hint
-       AND (username = :u OR account = :u)
+     WHERE username = :u
+       AND type = 'DBIT'
+       AND remarks LIKE :hint
        AND remarks LIKE '%credits recovered%'`,
     { u: username, hint: "%recover_of_tx:%" },
   );
@@ -2118,6 +2121,15 @@ export async function recoverHierarchyCreditsByGrantTxIds(input: {
     if (!debits) return { ok: false, code: "invalid_grants" };
 
     if (walletIds.length > 0) {
+      const grantIds = reversible
+        .filter((r) => !isWalletBalanceRecoverGrantId(r.grantTxId))
+        .map((r) => r.grantTxId);
+      if (grantIds.length > 0) {
+        return recoverHierarchyCreditsByGrantTxIds({
+          ...input,
+          grantTxIds: grantIds,
+        });
+      }
       const amount = debits[0]?.walletDebit ?? 0;
       if (amount < 1) return { ok: false, code: "invalid" };
       return adjustManagerCredits({
@@ -2197,6 +2209,15 @@ export async function recoverHierarchyCreditsByGrantTxIds(input: {
   if (!debits) return { ok: false, code: "invalid_grants" };
 
   if (walletIds.length > 0) {
+    const grantIds = reversible
+      .filter((r) => !isWalletBalanceRecoverGrantId(r.grantTxId))
+      .map((r) => r.grantTxId);
+    if (grantIds.length > 0) {
+      return recoverHierarchyCreditsByGrantTxIds({
+        ...input,
+        grantTxIds: grantIds,
+      });
+    }
     const amount = debits[0]?.walletDebit ?? 0;
     if (amount < 1) return { ok: false, code: "invalid" };
     const portal =

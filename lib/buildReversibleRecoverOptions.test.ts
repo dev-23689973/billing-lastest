@@ -129,6 +129,40 @@ describe("buildReversibleRecoverOptions", () => {
     expect(kept.map((x) => x.grantTxId)).toEqual([3, 2, 1]);
     expect(kept.every((x) => x.recoverableAmount === x.base)).toBe(true);
   });
+
+  it("reseller loads 10,460 + 5,212 — full wallet 15,672", () => {
+    const grants = [g(1, 10_460, 10_000), g(2, 5_212, 5_000)];
+    const kept = buildReversibleRecoverOptions(grants, 15_672);
+    expect(kept).toHaveLength(2);
+    expect(kept.map((x) => x.grantTxId)).toEqual([2, 1]);
+    expect(kept[0]!.recoverableAmount).toBe(5_000);
+    expect(kept[0]!.walletDebitAmount).toBe(5_212);
+    expect(kept[1]!.recoverableAmount).toBe(10_000);
+    expect(kept[1]!.walletDebitAmount).toBe(10_460);
+  });
+
+  it("reseller loads — balance 10,600 after 5,072 spent", () => {
+    const grants = [g(1, 10_460, 10_000), g(2, 5_212, 5_000)];
+    const kept = buildReversibleRecoverOptions(grants, 10_600);
+    expect(kept).toHaveLength(2);
+    expect(kept[0]!.recoverableAmount).toBe(5_000);
+    expect(kept[0]!.walletDebitAmount).toBe(5_212);
+    expect(kept[1]!.recoverableAmount).toBe(4_928);
+    expect(kept[1]!.walletDebitAmount).toBe(5_388);
+    expect(kept[1]!.isPartialRemainder).toBe(true);
+  });
+
+  it("reseller loads — balance 5,500 after 10,172 spent", () => {
+    const grants = [g(1, 10_460, 10_000), g(2, 5_212, 5_000)];
+    const kept = buildReversibleRecoverOptions(grants, 5_500);
+    expect(kept).toHaveLength(2);
+    expect(kept[0]!.recoverableAmount).toBe(5_000);
+    expect(kept[0]!.walletDebitAmount).toBe(5_212);
+    expect(kept[1]!.recoverableAmount).toBe(0);
+    expect(kept[1]!.walletDebitAmount).toBe(288);
+    expect(kept[1]!.bonusVoidAmount).toBe(288);
+    expect(kept[1]!.isPartialRemainder).toBe(true);
+  });
 });
 
 describe("applyLegacyUntaggedRecoverFifo", () => {
