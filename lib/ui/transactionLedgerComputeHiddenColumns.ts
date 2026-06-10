@@ -7,6 +7,7 @@ export const TRANSACTION_LEDGER_COLUMN_MIN_WIDTH_REM: Record<string, number> = {
   category: 4.5,
   amount: 5,
   bonusAmt: 4.5,
+  totalAmt: 5,
   promo: 12,
   note: 14,
 };
@@ -17,6 +18,7 @@ export const TRANSACTION_LEDGER_PINNED_COLUMN_IDS = new Set<string>(["type", "am
 export const TRANSACTION_LEDGER_COLUMN_HIDE_ORDER: readonly string[] = [
   "note",
   "promo",
+  "totalAmt",
   "bonusAmt",
   "category",
   "user",

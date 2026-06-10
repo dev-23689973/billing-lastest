@@ -27,6 +27,7 @@ const LEDGER_HIDE_CLASS: Record<string, string> = {
   category: "transaction-ledger-hide-category",
   amount: "transaction-ledger-hide-amount",
   bonusAmt: "transaction-ledger-hide-bonusAmt",
+  totalAmt: "transaction-ledger-hide-totalAmt",
   promo: "transaction-ledger-hide-promo",
   note: "transaction-ledger-hide-note",
 };
@@ -39,6 +40,7 @@ export const TRANSACTION_LEDGER_COL_TABLE_CLASS: Record<string, string> = {
   category: cn(ledgerColClass("category"), LEDGER_HIDE_CLASS.category),
   amount: ledgerColClass("amount"),
   bonusAmt: cn(ledgerColClass("bonusAmt"), LEDGER_HIDE_CLASS.bonusAmt),
+  totalAmt: cn(ledgerColClass("totalAmt"), LEDGER_HIDE_CLASS.totalAmt),
   promo: cn(ledgerColClass("promo"), LEDGER_HIDE_CLASS.promo),
   note: cn(ledgerColClass("note"), LEDGER_HIDE_CLASS.note),
 };

@@ -25,6 +25,18 @@ describe("ledgerBonusAmount", () => {
     expect(ledgerBonusAmount(row({ type: "BONUS", periods: 0, free_month: 7, account: "host" }))).toBe(7);
   });
 
+  it("uses promo void on hierarchy recover rows", () => {
+    expect(
+      ledgerBonusAmount(
+        row({
+          type: "CRDT",
+          periods: 5003,
+          remarks: "5216 credits recovered (5003 refunded, 213 promo void) from dddd",
+        }),
+      ),
+    ).toBe(213);
+  });
+
   it("uses promo meta on hierarchy CRDT", () => {
     expect(
       ledgerBonusAmount(

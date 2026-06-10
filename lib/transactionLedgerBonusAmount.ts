@@ -1,10 +1,14 @@
 import { SUBSCRIBER_TX_CREDIT, SUBSCRIBER_TX_DEBIT } from "@/lib/billing/subscriberTransactionTypes";
 import type { AdminTransactionRow } from "@/lib/repos/billing";
 import { parseHierarchyGrantBaseCredits } from "@/lib/hierarchyGrantRemark";
+import { parseHierarchyRecoverRemark } from "@/lib/hierarchyRecoverRemark";
 import { parseTransactionMeta } from "@/lib/transactionLedgerAnalytics";
 
 /** Admin-subsidized bonus credits/months for ledger display (not wallet debits). */
 export function ledgerBonusAmount(row: AdminTransactionRow): number | null {
+  const recover = parseHierarchyRecoverRemark(row.remarks);
+  if (recover && recover.bonusVoid > 0) return recover.bonusVoid;
+
   const type = row.type.toUpperCase();
   const freeMonth = row.free_month != null && row.free_month > 0 ? Math.floor(row.free_month) : 0;
 

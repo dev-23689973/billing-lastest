@@ -323,8 +323,12 @@ function InsightsBox({ children }: { children: ReactNode }) {
 const LEDGER_CATEGORY_COLUMN_TIP =
   "What happened: hierarchy transfers, subscriber renewals, promo grants, recoveries, and more. The Type column shows Credit, Debit, or Bonus.";
 
+const LEDGER_AMOUNT_COLUMN_TIP =
+  "Principal credits moved (what left or entered the wallet before promo subsidy). On received loads this is the base amount, not principal + bonus.";
 const LEDGER_BONUS_COLUMN_TIP =
-  "Bonus credits granted on top of the base amount (admin subsidy). Shown separately from the main Amt column.";
+  "Promo credits on loads/sends (admin subsidy) or promo voided on recover. Shown separately from the main Amt column.";
+const LEDGER_TOTAL_COLUMN_TIP =
+  "Full package or recover event size (principal + promo on loads/sends; headline wallet debit on recover). May differ from Amt when promo is subsidized or voided.";
 
 function ledgerColumnHeaderLabel(key: TransactionLedgerColumnKey): string {
   return TRANSACTION_LEDGER_TABLE_COLUMNS.find((c) => c.key === key)?.label ?? key;
@@ -371,7 +375,7 @@ function renderLedgerTableHeaderCell(col: TransactionLedgerColumnKey) {
       </th>
     );
   }
-  if (col === "bonusAmt") {
+  if (col === "amount") {
     return (
       <th key={col} className={transactionLedgerHeaderCell(col, "text-center normal-case tracking-normal")}>
         <span className="inline-flex max-w-full items-center justify-center gap-0.5">
@@ -379,8 +383,27 @@ function renderLedgerTableHeaderCell(col: TransactionLedgerColumnKey) {
           <button
             type="button"
             className="inline-flex shrink-0 rounded-sm text-muted-foreground/75 transition hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400/40"
-            aria-label="About Bonus column"
-            title={LEDGER_BONUS_COLUMN_TIP}
+            aria-label="About Amt column"
+            title={LEDGER_AMOUNT_COLUMN_TIP}
+          >
+            <Info className="h-3 w-3" aria-hidden />
+          </button>
+        </span>
+      </th>
+    );
+  }
+  if (col === "bonusAmt" || col === "totalAmt") {
+    const tip = col === "bonusAmt" ? LEDGER_BONUS_COLUMN_TIP : LEDGER_TOTAL_COLUMN_TIP;
+    const label = col === "bonusAmt" ? "Bonus" : "Total";
+    return (
+      <th key={col} className={transactionLedgerHeaderCell(col, "text-center normal-case tracking-normal")}>
+        <span className="inline-flex max-w-full items-center justify-center gap-0.5">
+          <span>{ledgerColumnHeaderLabel(col)}</span>
+          <button
+            type="button"
+            className="inline-flex shrink-0 rounded-sm text-muted-foreground/75 transition hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-400/40"
+            aria-label={`About ${label} column`}
+            title={tip}
           >
             <Info className="h-3 w-3" aria-hidden />
           </button>

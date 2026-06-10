@@ -11,6 +11,8 @@ import { parseRowDate } from "@/lib/transactionLedgerAnalytics";
 import { normalizeTransactionType } from "@/lib/transactionTypeDisplay";
 import type { AdminTransactionRow } from "@/lib/repos/billing";
 import { ledgerBonusAmount } from "@/lib/transactionLedgerBonusAmount";
+import { parseHierarchyRecoverRemark } from "@/lib/hierarchyRecoverRemark";
+import { ledgerPrincipalAmount, ledgerTotalAmount } from "@/lib/transactionLedgerAmount";
 import { cn } from "@/lib/cn";
 
 export type TransactionLedgerColumnKey =
@@ -21,6 +23,7 @@ export type TransactionLedgerColumnKey =
   | "category"
   | "amount"
   | "bonusAmt"
+  | "totalAmt"
   | "promo"
   | "note";
 
@@ -32,6 +35,7 @@ export const TRANSACTION_LEDGER_TABLE_COLUMNS: { key: TransactionLedgerColumnKey
   { key: "category", label: "Cat" },
   { key: "amount", label: "Amt" },
   { key: "bonusAmt", label: "Bonus" },
+  { key: "totalAmt", label: "Total" },
   { key: "promo", label: "Promo" },
   { key: "note", label: "Note" },
 ];
@@ -73,9 +77,33 @@ export function ledgerClip(content: ReactNode, title?: string) {
 export function renderLedgerBonusAmountCell(r: AdminTransactionRow) {
   const bonus = ledgerBonusAmount(r);
   if (bonus == null || bonus < 1) return <span className="text-muted-foreground">—</span>;
+  const recover = parseHierarchyRecoverRemark(r.remarks);
+  const title = recover
+    ? `${bonus} promo void on recover`
+    : `${bonus} bonus (admin subsidy)`;
   return (
-    <span className="font-medium tabular-nums text-fuchsia-700 dark:text-fuchsia-300" title={`${bonus} bonus (admin subsidy)`}>
+    <span className="font-medium tabular-nums text-fuchsia-700 dark:text-fuchsia-300" title={title}>
       +{formatInt(bonus)}
+    </span>
+  );
+}
+
+function renderSignedCreditsCell(
+  value: number,
+  opts?: { title?: string; mutedWhenZero?: boolean },
+) {
+  if (value === 0) {
+    return opts?.mutedWhenZero !== false ? (
+      <span className="text-muted-foreground">—</span>
+    ) : (
+      <span className="font-medium tabular-nums text-muted-foreground">0</span>
+    );
+  }
+  const cls = value < 0 ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400";
+  return (
+    <span className={cn("font-medium tabular-nums", cls)} title={opts?.title}>
+      {value > 0 ? "+" : ""}
+      {formatInt(value)}
     </span>
   );
 }
@@ -95,15 +123,13 @@ export function renderLedgerAmountCell(r: AdminTransactionRow) {
       );
     }
   }
-  const p = r.periods;
-  if (p === 0) return <span className="text-muted-foreground">—</span>;
-  const cls = p < 0 ? "text-rose-700 dark:text-rose-400" : "text-emerald-700 dark:text-emerald-400";
-  return (
-    <span className={cn("font-medium tabular-nums", cls)} title={`${p} credits`}>
-      {p > 0 ? "+" : ""}
-      {formatInt(p)}
-    </span>
-  );
+  const principal = ledgerPrincipalAmount(r);
+  return renderSignedCreditsCell(principal, { title: `${principal} credits (principal)` });
+}
+
+export function renderLedgerTotalAmountCell(r: AdminTransactionRow) {
+  const total = ledgerTotalAmount(r);
+  return renderSignedCreditsCell(total, { title: `${total} credits (wallet total)` });
 }
 
 export function renderLedgerColumnCell(col: TransactionLedgerColumnKey, r: AdminTransactionRow, compact = true) {
@@ -124,6 +150,8 @@ export function renderLedgerColumnCell(col: TransactionLedgerColumnKey, r: Admin
       return renderLedgerAmountCell(r);
     case "bonusAmt":
       return renderLedgerBonusAmountCell(r);
+    case "totalAmt":
+      return renderLedgerTotalAmountCell(r);
     case "promo":
       return <TransactionPromoBreakdown row={r} compact={compact} />;
     case "note":
