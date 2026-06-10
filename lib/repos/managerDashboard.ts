@@ -48,14 +48,15 @@ const ACCOUNT_STATUS_ON = 0;
 const ACCOUNTS_SCOPED_FROM = `FROM accounts a
   LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
   LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-  LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL`;
+  LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+  LEFT JOIN users um ON um.username = a.username AND um.type = 'MNGR'`;
 
 function managerScopeWhere(managerUsername: string): { sql: string; params: string[] } {
   const owner = managerUsername.trim();
   if (!owner) return { sql: "1=0", params: [] };
   return {
-    sql: "(ur1.username_owner = ? OR ur2.username_owner = ?)",
-    params: [owner, owner],
+    sql: "(a.username = ? OR ur1.username_owner = ? OR ur2.username_owner = ?)",
+    params: [owner, owner, owner],
   };
 }
 

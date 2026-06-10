@@ -2681,8 +2681,8 @@ function accountScopeWhereClause(scope: AccountScope): { sql: string; params: un
   if (!owner) return { sql: "1=0", params: [] };
   if (scope.ownerType === "MNGR") {
     return {
-      sql: "(ur1.username_owner = ? OR ur2.username_owner = ?)",
-      params: [owner, owner],
+      sql: "(a.username = ? OR ur1.username_owner = ? OR ur2.username_owner = ?)",
+      params: [owner, owner, owner],
     };
   }
   if (scope.ownerType === "SRSLR") {
@@ -2697,12 +2697,17 @@ function accountScopeWhereClause(scope: AccountScope): { sql: string; params: un
   };
 }
 
-/** Same joins as {@link listAccountsPaged} — staff-hub subscriber totals must match modal scope. */
-const ACCOUNTS_HIERARCHY_FROM_SQL = `
-  FROM accounts a
+/** Hierarchy joins for subscriber lists — includes manager-direct ownership (`accounts.username` = MNGR). */
+const ACCOUNTS_HIERARCHY_JOINS_SQL = `
   LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
   LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-  LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL`;
+  LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+  LEFT JOIN users um ON um.username = a.username AND um.type = 'MNGR'`;
+
+/** Same joins as {@link listAccountsPaged} — staff-hub subscriber totals must match modal scope. */
+const ACCOUNTS_HIERARCHY_FROM_SQL = `FROM accounts a${ACCOUNTS_HIERARCHY_JOINS_SQL}`;
+
+const ACCOUNTS_MANAGER_LOGIN_EXPR = `COALESCE(ur1.username_owner, ur2.username_owner, um.username, '')`;
 
 export type StaffHubSubscriberCountFilter = "total" | "active" | "expired";
 
@@ -2735,10 +2740,10 @@ export async function batchCountSubscriberAccountsByManager(
   const ph = managerLogins.map(() => "?").join(",");
   const { sql: filtSql, params: filtParams } = staffHubSubscriberCountFilterSql(filter);
   const [rows] = await pool.execute<RowDataPacket[]>(
-    `SELECT COALESCE(ur1.username_owner, ur2.username_owner, '') AS manager_login, COUNT(*) AS c
+    `SELECT ${ACCOUNTS_MANAGER_LOGIN_EXPR} AS manager_login, COUNT(*) AS c
      ${ACCOUNTS_HIERARCHY_FROM_SQL}
-     WHERE COALESCE(ur1.username_owner, ur2.username_owner, '') IN (${ph})${filtSql}
-     GROUP BY COALESCE(ur1.username_owner, ur2.username_owner, '')`,
+     WHERE ${ACCOUNTS_MANAGER_LOGIN_EXPR} IN (${ph})${filtSql}
+     GROUP BY ${ACCOUNTS_MANAGER_LOGIN_EXPR}`,
     [...managerLogins, ...filtParams] as (string | number)[],
   );
   return new Map(rows.map((r) => [String(r.manager_login), Number(r.c)]));
@@ -2809,10 +2814,7 @@ export async function countActiveClientsForPromo2(scope: { kind: "MNGR" | "SRSLR
   const pool = getBillingPool();
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT COUNT(*) AS c
-     FROM accounts a
-     LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-     LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-     LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+     ${ACCOUNTS_HIERARCHY_FROM_SQL}
      WHERE ${sql} AND ${active.sql}`,
     [...params, ...active.params],
   );
@@ -3167,7 +3169,7 @@ async function batchStalkerReceiverKeepAliveForAccounts(
 
 const ACCOUNT_SORT_COLS: Record<string, string> = {
   account: "a.account",
-  manager: "COALESCE(ur1.username_owner, ur2.username_owner, '')",
+  manager: ACCOUNTS_MANAGER_LOGIN_EXPR,
   reseller: "COALESCE(ur1.username, ur2.username, '')",
   dealer: "COALESCE(ud.username, '')",
   /** Username column displays device login (`accounts.account`). */
@@ -3283,7 +3285,7 @@ export async function listAccountsPagedScoped(input: {
       ? String(input.managerLogin).trim()
       : null;
   if (mgrLogin) {
-    fullWhereSql = `(${fullWhereSql}) AND (COALESCE(ur1.username_owner, ur2.username_owner, '') = ?)`;
+    fullWhereSql = `(${fullWhereSql}) AND (${ACCOUNTS_MANAGER_LOGIN_EXPR} = ?)`;
     fullWhereParams = [...fullWhereParams, mgrLogin];
   }
 
@@ -3318,10 +3320,7 @@ export async function listAccountsPagedScoped(input: {
 
   const [countRows] = await pool.query<RowDataPacket[]>(
     `SELECT COUNT(*) AS c
-     FROM accounts a
-     LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-     LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-     LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+     ${ACCOUNTS_HIERARCHY_FROM_SQL}
      WHERE ${fullWhereSql}`,
     fullWhereParams,
   );
@@ -3346,11 +3345,8 @@ export async function listAccountsPagedScoped(input: {
        a.last_active,
        COALESCE(ud.username, '') AS dealer_login,
        COALESCE(ur1.username, ur2.username, '') AS reseller_login,
-       COALESCE(ur1.username_owner, ur2.username_owner, '') AS manager_login
-     FROM accounts a
-     LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-     LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-     LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+       ${ACCOUNTS_MANAGER_LOGIN_EXPR} AS manager_login
+     ${ACCOUNTS_HIERARCHY_FROM_SQL}
      WHERE ${fullWhereSql}
      ORDER BY ${orderCol} ${orderDir}
      LIMIT ? OFFSET ?`;
@@ -3448,10 +3444,7 @@ export async function getUsersSummaryScoped(input: {
     input.ownerType === "SRSLR" && input.dealerUsername != null && String(input.dealerUsername).trim() !== ""
       ? { sql: " AND a.username = ?", params: [String(input.dealerUsername).trim()] as unknown[] }
       : { sql: "", params: [] as unknown[] };
-  const fromClause = `FROM accounts a
-    LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-    LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-    LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+  const fromClause = `${ACCOUNTS_HIERARCHY_FROM_SQL}
     WHERE ${scopeSql}${dealerOnly.sql}`;
   const summaryParams = [...scopeParams, ...dealerOnly.params];
 
@@ -3546,10 +3539,7 @@ export type DashboardMonthPoint = { key: string; label: string; count: number };
 export type DashboardDayCreditPoint = { key: string; label: string; creditIn: number; creditOut: number };
 
 function accountsScopedFromClause(): string {
-  return `FROM accounts a
-    LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-    LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-    LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL`;
+  return ACCOUNTS_HIERARCHY_FROM_SQL;
 }
 
 function ymKey(d: Date): string {
@@ -5166,10 +5156,7 @@ export async function canAccessAccountByRole(input: {
   });
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT a.account
-     FROM accounts a
-     LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-     LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-     LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+     ${ACCOUNTS_HIERARCHY_FROM_SQL}
      WHERE a.account = ? AND (${scopeSql})
      LIMIT 1`,
     [acc, ...scopeParams],
@@ -5709,10 +5696,7 @@ async function countAdminMappableStalkerUsers(): Promise<number> {
   return uids.length;
 }
 
-const ADMIN_MESSAGE_ACCOUNT_FROM = `FROM accounts a
-  LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-  LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-  LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL`;
+const ADMIN_MESSAGE_ACCOUNT_FROM = ACCOUNTS_HIERARCHY_FROM_SQL;
 
 /**
  * Resolve Stalker `users.id` values for a billing-driven audience (max `maxUids` matches).
@@ -5796,10 +5780,7 @@ export async function listScopedAccountLogins(input: {
   const lim = Math.min(10000, Math.max(1, Math.floor(input.limit ?? 8000)));
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT DISTINCT a.account AS acct
-     FROM accounts a
-     LEFT JOIN users ud ON ud.username = a.username AND ud.type = 'RSLR'
-     LEFT JOIN users ur1 ON ur1.username = ud.username_owner AND ur1.type = 'SRSLR'
-     LEFT JOIN users ur2 ON ur2.username = a.username AND ur2.type = 'SRSLR' AND ud.username IS NULL
+     ${ACCOUNTS_HIERARCHY_FROM_SQL}
      WHERE (${scopeSql})
      ORDER BY a.account ASC
      LIMIT ?`,

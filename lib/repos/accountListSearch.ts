@@ -7,7 +7,7 @@ import { isValidMacFormat, normalizeMacForLookup } from "@/lib/mac/macFormat";
 export const ACCOUNT_LIST_DISPLAYED_PARENT_SQL = `COALESCE(
   NULLIF(TRIM(ud.username), ''),
   NULLIF(TRIM(COALESCE(ur1.username, ur2.username)), ''),
-  NULLIF(TRIM(COALESCE(ur1.username_owner, ur2.username_owner)), ''),
+  NULLIF(TRIM(COALESCE(ur1.username_owner, ur2.username_owner, um.username)), ''),
   NULLIF(TRIM(a.username), '')
 )`;
 
