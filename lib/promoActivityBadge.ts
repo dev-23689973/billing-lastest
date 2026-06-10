@@ -1,6 +1,6 @@
 import { pickTierPercentage, type PromoTier } from "@/lib/promoBonus";
 
-export type ActivityRank = "bronze" | "silver" | "gold" | "platinum" | "diamond";
+export type ActivityRank = "bronze" | "silver" | "gold" | "platinum" | "diamond" | "vip";
 
 export const ACTIVITY_RANK_SLOT_COUNT = 5;
 
@@ -33,7 +33,10 @@ export type ActivityBadge = {
   nextLitCount: number | null;
 };
 
-export const ACTIVITY_RANKS: ActivityRank[] = ["bronze", "silver", "gold", "platinum", "diamond"];
+export const ACTIVITY_RANKS: ActivityRank[] = ["bronze", "silver", "gold", "platinum", "diamond", "vip"];
+
+/** Max Promo 2 rows: one band per rank × five lit levels (Bronze → VIP). */
+export const PROMO2_MAX_TIERS = ACTIVITY_RANK_SLOT_COUNT * ACTIVITY_RANKS.length;
 
 export const ACTIVITY_RANK_LABEL: Record<ActivityRank, string> = {
   bronze: "Bronze",
@@ -41,6 +44,7 @@ export const ACTIVITY_RANK_LABEL: Record<ActivityRank, string> = {
   gold: "Gold",
   platinum: "Platinum",
   diamond: "Diamond",
+  vip: "VIP",
 };
 
 export const ACTIVITY_RANK_ICON: Record<ActivityRank, string> = {
@@ -49,7 +53,15 @@ export const ACTIVITY_RANK_ICON: Record<ActivityRank, string> = {
   gold: "🥇",
   platinum: "💎",
   diamond: "💠",
+  vip: "👑",
 };
+
+export function validatePromo2TierLimit(tiers: unknown[], label = "Promo 2 (active clients)"): string | null {
+  if (tiers.length > PROMO2_MAX_TIERS) {
+    return `${label}: at most ${PROMO2_MAX_TIERS} tiers allowed (Bronze through VIP).`;
+  }
+  return null;
+}
 
 /** Half-open Promo 2 tier match; returns 1-based row index or null. */
 export function pickPromo2TierIndex(activeClients: number, tiers: PromoTier[]): number | null {
@@ -67,15 +79,18 @@ export function pickPromo2TierIndex(activeClients: number, tiers: PromoTier[]): 
 
 /**
  * Promo 2 row → rank band (every 5 rows):
- * 1–5 Bronze, 6–10 Silver, 11–15 Gold, 16–20 Platinum, 21+ Diamond.
+ * 1–5 Bronze, 6–10 Silver, 11–15 Gold, 16–20 Platinum, 21–25 Diamond, 26–30 VIP.
  */
+export function normalizePromo2TierIndex(tierIndex: number): number {
+  if (!Number.isFinite(tierIndex) || tierIndex < 1) return tierIndex;
+  return Math.min(PROMO2_MAX_TIERS, Math.floor(tierIndex));
+}
+
 export function activityRankFromTierIndex(tierIndex: number, _totalTiers?: number): ActivityRank | null {
   if (!Number.isFinite(tierIndex) || tierIndex < 1) return null;
-  const bandIndex = Math.min(
-    ACTIVITY_RANKS.length - 1,
-    Math.floor((tierIndex - 1) / ACTIVITY_RANK_SLOT_COUNT),
-  );
-  return ACTIVITY_RANKS[bandIndex] ?? null;
+  const capped = normalizePromo2TierIndex(tierIndex);
+  const bandIndex = Math.floor((capped - 1) / ACTIVITY_RANK_SLOT_COUNT);
+  return ACTIVITY_RANKS[Math.min(ACTIVITY_RANKS.length - 1, bandIndex)] ?? null;
 }
 
 /** Lit count = position within the current 5-row band (1–5). */
@@ -84,9 +99,10 @@ export function activityRankLevelFromTierIndex(
   totalTiers: number,
 ): { rank: ActivityRank; count: number } | null {
   void totalTiers;
-  const rank = activityRankFromTierIndex(tierIndex);
+  const capped = normalizePromo2TierIndex(tierIndex);
+  const rank = activityRankFromTierIndex(capped);
   if (!rank) return null;
-  const count = ((tierIndex - 1) % ACTIVITY_RANK_SLOT_COUNT) + 1;
+  const count = ((capped - 1) % ACTIVITY_RANK_SLOT_COUNT) + 1;
   return { rank, count };
 }
 

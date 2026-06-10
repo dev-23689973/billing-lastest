@@ -6,9 +6,11 @@ import {
   activityRankFromTierIndex,
   activityRankLevelFromTierIndex,
   pickPromo2TierIndex,
+  PROMO2_MAX_TIERS,
   resolveActivityBadge,
   resolveActivityNudge,
   sanitizeBadgeLitCount,
+  validatePromo2TierLimit,
 } from "./promoActivityBadge";
 import type { PromoTier } from "./promoBonus";
 
@@ -42,6 +44,15 @@ describe("activityRankFromTierIndex", () => {
     expect(activityRankFromTierIndex(20)).toBe("platinum");
     expect(activityRankFromTierIndex(21)).toBe("diamond");
     expect(activityRankFromTierIndex(25)).toBe("diamond");
+    expect(activityRankFromTierIndex(26)).toBe("vip");
+    expect(activityRankFromTierIndex(30)).toBe("vip");
+  });
+});
+
+describe("validatePromo2TierLimit", () => {
+  it("allows up to 30 tiers and rejects more", () => {
+    expect(validatePromo2TierLimit(new Array(PROMO2_MAX_TIERS))).toBeNull();
+    expect(validatePromo2TierLimit(new Array(PROMO2_MAX_TIERS + 1))).toMatch(/30 tiers/);
   });
 });
 
@@ -53,6 +64,8 @@ describe("activityRankLevelFromTierIndex", () => {
     expect(activityRankLevelFromTierIndex(7, 15)).toEqual({ rank: "silver", count: 2 });
     expect(activityRankLevelFromTierIndex(11, 15)).toEqual({ rank: "gold", count: 1 });
     expect(activityRankLevelFromTierIndex(25, 25)).toEqual({ rank: "diamond", count: 5 });
+    expect(activityRankLevelFromTierIndex(26, 30)).toEqual({ rank: "vip", count: 1 });
+    expect(activityRankLevelFromTierIndex(30, 30)).toEqual({ rank: "vip", count: 5 });
   });
 });
 
@@ -124,7 +137,7 @@ describe("activityBadgeHoverText", () => {
   it("shows top tier message when there is no next Promo 2 row", () => {
     expect(
       activityBadgeHoverText({
-        rank: "diamond",
+        rank: "vip",
         count: 5,
         activeClients: 9000,
         clientsToNextTier: null,
@@ -132,7 +145,7 @@ describe("activityBadgeHoverText", () => {
         nextLitCount: null,
       }),
     ).toEqual({
-      statusLine: "Diamond 5/5 · 9,000 active clients",
+      statusLine: "VIP 5/5 · 9,000 active clients",
       remainLine: "Top tier reached",
     });
   });

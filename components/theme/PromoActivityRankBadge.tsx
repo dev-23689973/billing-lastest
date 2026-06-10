@@ -32,6 +32,7 @@ export function PromoActivityRankBadge({
   return (
     <span
       className={cn("promo-activity-rank inline-flex items-center", showHoverTip && "promo-activity-rank--hoverable", className)}
+      data-rank={displayRank}
       title={showHoverTip ? undefined : title}
       aria-label={ariaLabel}
       tabIndex={showHoverTip ? 0 : undefined}

@@ -2483,6 +2483,9 @@ html {
     transform: scale(1.06);
     filter: none;
   }
+  .promo-activity-rank[data-rank="vip"] .promo-activity-rank__icon--active {
+    filter: drop-shadow(0 0 5px rgb(251 191 36 / 0.75));
+  }
   .promo-activity-rank__icon--disabled {
     opacity: 0.1;
     filter: grayscale(1) saturate(0.2);

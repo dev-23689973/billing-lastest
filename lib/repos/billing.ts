@@ -74,6 +74,7 @@ import {
   type PromoTier,
   validatePromoTiers,
 } from "@/lib/promoBonus";
+import { validatePromo2TierLimit } from "@/lib/promoActivityBadge";
 import { randomUUID } from "node:crypto";
 import {
   ACCOUNT_AUTO_RENEW_MARK_OFF,
@@ -4700,6 +4701,8 @@ export async function savePromoBonusRules(input: {
   if (e1) return { ok: false, error: e1 };
   const e2 = validatePromoTiers(input.p2, "Promo 2 (active clients)", true);
   if (e2) return { ok: false, error: e2 };
+  const e2Limit = validatePromo2TierLimit(input.p2);
+  if (e2Limit) return { ok: false, error: e2Limit };
   const pool = getBillingPool();
   const conn = await pool.getConnection();
   try {

@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { PromoActivityRankBadge } from "@/components/theme/PromoActivityRankBadge";
 import type { PromoTier } from "@/lib/promoBonus";
 import { validatePromoTiers } from "@/lib/promoBonus";
-import { activityBadgeAriaLabel, activityRankLevelFromTierIndex } from "@/lib/promoActivityBadge";
+import {
+  activityBadgeAriaLabel,
+  activityRankLevelFromTierIndex,
+  PROMO2_MAX_TIERS,
+  validatePromo2TierLimit,
+} from "@/lib/promoActivityBadge";
 import { cn } from "@/lib/cn";
 import { rsIconMd } from "@/lib/ui/responsiveScale";
 
@@ -28,6 +33,7 @@ function TierTable({
   onAdd,
   onRemove,
   showBadgeColumn = false,
+  maxRows,
 }: {
   title: string;
   subtitle: string;
@@ -36,8 +42,10 @@ function TierTable({
   onAdd: () => void;
   onRemove: (index: number) => void;
   showBadgeColumn?: boolean;
+  maxRows?: number;
 }) {
   const columnCount = showBadgeColumn ? 6 : 5;
+  const atMaxRows = maxRows != null && rows.length >= maxRows;
 
   return (
     <section className="flex min-w-0 flex-col space-y-2 rounded-xl border border-border/70 bg-card p-3 shadow-sm sm:p-4 lg:min-h-0 lg:flex-1">
@@ -46,7 +54,15 @@ function TierTable({
           <h3 className="text-sm font-semibold tracking-tight text-foreground">{title}</h3>
           <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">{subtitle}</p>
         </div>
-        <Button type="button" variant="outline" size="sm" className="h-8 shrink-0 gap-1.5 px-3 text-xs font-medium" onClick={onAdd}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-8 shrink-0 gap-1.5 px-3 text-xs font-medium"
+          onClick={onAdd}
+          disabled={atMaxRows}
+          title={atMaxRows ? `Maximum ${maxRows} tiers reached` : undefined}
+        >
           <Plus className="h-3.5 w-3.5" aria-hidden />
           Add tier
         </Button>
@@ -226,6 +242,12 @@ export function BonusRulesForm({ initialP1, initialP2 }: { initialP1: PromoTier[
         if (err2) {
           e.preventDefault();
           setClientError(err2);
+          return;
+        }
+        const err2Limit = validatePromo2TierLimit(p2);
+        if (err2Limit) {
+          e.preventDefault();
+          setClientError(err2Limit);
         }
       }}
       className="flex flex-col gap-4 lg:min-h-0 lg:flex-1"
@@ -244,10 +266,11 @@ export function BonusRulesForm({ initialP1, initialP2 }: { initialP1: PromoTier[
         />
         <TierTable
           title="Promo 2 — Active clients"
-          subtitle="Counts active clients (`accounts.status` on). Uses the same rate % on requested credits."
+          subtitle={`Counts active clients (\`accounts.status\` on). Uses the same rate % on requested credits. Up to ${PROMO2_MAX_TIERS} tiers (Bronze → VIP badges).`}
           rows={p2}
           showBadgeColumn
-          onAdd={() => setP2((r) => [...r, emptyRow()])}
+          maxRows={PROMO2_MAX_TIERS}
+          onAdd={() => setP2((r) => (r.length >= PROMO2_MAX_TIERS ? r : [...r, emptyRow()]))}
           onRemove={(i) => setP2((r) => r.filter((_, j) => j !== i))}
           onChange={(i, patch) => setP2((r) => r.map((row, j) => (j === i ? { ...row, ...patch } : row)))}
         />
