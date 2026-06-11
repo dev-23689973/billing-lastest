@@ -16,7 +16,6 @@ import {
   hudDashWalletValue,
   hudDashWalletValueAccent,
   hudDashProgressTrack,
-  hudDashShell,
   creditFlowAnalysisGrid,
 } from "@/components/dashboard/hud/hudDashboardLayout";
 import { FitTabularText } from "@/components/dashboard/hud/FitTabularText";
