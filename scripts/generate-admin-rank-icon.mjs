@@ -8,9 +8,9 @@ const srcPath = path.join(root, "_originals", "admin.png");
 const outPath = path.join(root, "icons", "admin.png");
 const out2xPath = path.join(root, "icons", "admin@2x.png");
 
-/** 5 rank slots × 60px = 300px wide (expanded), same height as one slot row. */
-const WIDTH = 300;
-const HEIGHT = 60;
+/** Expanded banner — 5:1 crest from `_originals/admin.png`. */
+const WIDTH = 440;
+const HEIGHT = 88;
 
 function backdropAlpha(r, g, b, a) {
   const max = Math.max(r, g, b);
@@ -56,9 +56,9 @@ async function prepareSource() {
   const trimmed = await knockOutBackdrop(await knocked.trim().png().toBuffer());
 
   const lightened = await trimmed
-    .modulate({ brightness: 1.42, saturation: 1.18, lightness: 1.14 })
-    .linear(1.28, -28)
-    .gamma(1.08)
+    .modulate({ brightness: 1.58, saturation: 1.32, lightness: 1.22 })
+    .linear(1.42, -14)
+    .gamma(1.14)
     .normalise()
     .png()
     .toBuffer();
@@ -70,7 +70,8 @@ async function exportIcon(prepared, width, height, dest) {
   await prepared
     .clone()
     .resize(width, height, {
-      fit: "fill",
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
       kernel: sharp.kernel.lanczos3,
     })
     .png({ compressionLevel: 9, palette: false })
