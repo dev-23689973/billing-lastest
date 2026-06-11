@@ -2418,6 +2418,11 @@ html {
   .sidebar-brand-activity-badge {
     min-height: 1.125rem;
   }
+  @media (min-width: 640px) {
+    .sidebar-brand-activity-badge {
+      min-height: 1.25rem;
+    }
+  }
   .promo-activity-rank--hoverable {
     position: relative;
     cursor: help;
@@ -2483,6 +2488,10 @@ html {
     object-fit: contain;
     user-select: none;
   }
+  .promo-activity-rank__img--admin {
+    image-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+  }
   .promo-activity-rank__icon--active {
     opacity: 1;
     transform: scale(1.06);
@@ -2491,9 +2500,26 @@ html {
   .promo-activity-rank[data-rank="vip"] .promo-activity-rank__icon--active {
     filter: drop-shadow(0 0 5px rgb(251 191 36 / 0.75));
   }
+  .promo-activity-rank--admin .promo-activity-rank__icon {
+    background: transparent;
+  }
+  .promo-activity-rank--admin .promo-activity-rank__img--admin {
+    display: block;
+    filter: drop-shadow(0 1px 4px rgb(0 0 0 / 0.28)) drop-shadow(0 0 14px rgb(34 211 238 / 0.2));
+  }
+  .promo-activity-rank--admin.sidebar-brand-activity-badge,
+  .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
+    min-height: 1.375rem;
+  }
+  @media (min-width: 640px) {
+    .promo-activity-rank--admin.sidebar-brand-activity-badge,
+    .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
+      min-height: 1.5625rem;
+    }
+  }
   .promo-activity-rank--admin .promo-activity-rank__icon--active {
-    transform: scale(1.08);
-    filter: drop-shadow(0 0 6px rgb(34 211 238 / 0.45));
+    transform: none;
+    filter: none;
   }
   .promo-activity-rank__icon--disabled {
     opacity: 0.1;

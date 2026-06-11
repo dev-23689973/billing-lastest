@@ -147,7 +147,7 @@ export function MobileBillingProfileCard({
             <p className={cn(rsTextKicker, "sidebar-brand-session__label m-0")}>Activity tier</p>
             <p className={cn(hudDashMutedCaption, "mt-0.5 normal-case tracking-normal")}>
               {isAdminSession
-                ? "Admin rank badge"
+                ? "Top level · Unlimited access"
                 : "Earn more active clients to unlock badges"}
             </p>
           </div>
@@ -159,8 +159,8 @@ export function MobileBillingProfileCard({
                 variant="admin"
                 rank={null}
                 className="sidebar-brand-activity-badge"
-                title="Admin"
-                ariaLabel="Admin rank badge"
+                title="Admin · Top level · Unlimited"
+                ariaLabel="Admin crest — top level, unlimited access"
                 hoverStatusLine={adminHover.statusLine}
                 hoverRemainLine={adminHover.remainLine}
               />

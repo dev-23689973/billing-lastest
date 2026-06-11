@@ -50,8 +50,8 @@ export function AdminSidebar({
         variant="admin"
         rank={null}
         className="sidebar-brand-activity-badge mt-1"
-        title="Admin"
-        ariaLabel="Admin rank badge"
+        title="Admin · Top level · Unlimited"
+        ariaLabel="Admin crest — top level, unlimited access"
         hoverStatusLine={adminHover.statusLine}
         hoverRemainLine={adminHover.remainLine}
       />
