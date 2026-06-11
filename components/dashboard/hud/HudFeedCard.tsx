@@ -9,7 +9,7 @@ import {
   hudFeedCardBody,
   hudFeedCardHeader,
   hudFeedTableInnerShell,
-  hudMutedOuterShell,
+  hudDashShell,
 } from "@/components/dashboard/hud/hudDashboardLayout";
 
 export function HudFeedCard({
@@ -30,7 +30,7 @@ export function HudFeedCard({
   className?: string;
 }) {
   return (
-    <div className={cn(hudMutedOuterShell, "flex h-full min-h-0 min-w-0 flex-col", className)}>
+    <div className={cn(hudDashShell, "flex h-full min-h-0 min-w-0 flex-col", className)}>
       <div className={cn("relative z-[1]", hudFeedCardBody)}>
         <div className={hudFeedCardHeader}>
           <div className="min-w-0">

@@ -18,9 +18,8 @@ export function useAdminMessageStalkerShell(
   initialStats: AdminStalkerMessageDashboardStats,
   initialRecent: AdminRecentStalkerSendMessageRow[],
   enabled: boolean,
-  apiPath: "/api/admin/message-stalker-shell" | "/api/operator/message-stalker-shell" = "/api/admin/message-stalker-shell",
+  variant: "admin" | "operator" = "admin",
 ): AdminMessageStalkerShell {
-  const variant = apiPath.includes("/operator/") ? "operator" : "admin";
   const [stats, setStats] = useState(initialStats);
   const [recent, setRecent] = useState(initialRecent);
   const [loading, setLoading] = useState(enabled);

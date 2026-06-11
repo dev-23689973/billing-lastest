@@ -2560,7 +2560,7 @@ export async function renewUserAction(formData: FormData) {
   }
   const r =
     type === "RCDT"
-      ? await repo.recoverAccountCreditsByOperator({ account, credits })
+      ? await repo.recoverAccountCreditsByOperator({ account, creditMonths: credits })
       : await repo.renewAccountByOperatorValidity({ account, validity: validityRaw });
   if (!r.ok) {
     if (r.code === "insufficient_recoverable") {
@@ -2616,7 +2616,7 @@ export async function renewOperatorUserAction(formData: FormData) {
     const pre = await repo.portalOperatorRcdtPrecheckLikePhp({
       ownerType: s.type,
       account,
-      credits,
+      creditMonths: credits,
     });
     if (!pre.ok) {
       if (pre.code === "reseller_months") {
@@ -2637,7 +2637,7 @@ export async function renewOperatorUserAction(formData: FormData) {
       }
       redirect(`${base}/users/${encodeURIComponent(account)}?error=renew_invalid`);
     }
-    r = await repo.recoverAccountCreditsByOperator({ account, credits });
+    r = await repo.recoverAccountCreditsByOperator({ account, creditMonths: credits });
   } else {
     if (!repo.operatorRenewValidityFormatLikePhp(validityRaw)) {
       redirect(`${base}/users/${encodeURIComponent(account)}?error=renew_invalid`);

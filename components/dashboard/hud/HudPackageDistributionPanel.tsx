@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 
 import { IntelGuideBadge } from "@/components/dashboard/IntelGuideBadge";
 import { useDashboardIntel } from "@/components/dashboard/DashboardIntelContext";
-import { hudMutedOuterShell } from "@/components/dashboard/hud/hudDashboardLayout";
+import { hudDashShell } from "@/components/dashboard/hud/hudDashboardLayout";
 import type { AdminReportPackageRow } from "@/lib/dashboard/types";
 import { cn } from "@/lib/cn";
 
@@ -89,7 +89,7 @@ export function HudPackageDistributionPanel({
   const hasAny = rows.length > 0 && maxCount > 0;
 
   return (
-    <div className={cn(hudMutedOuterShell, "flex min-h-0 min-w-0 flex-col", className)}>
+    <div className={cn(hudDashShell, "flex min-h-0 min-w-0 flex-col", className)}>
       <div className="relative z-[1] flex min-h-0 flex-col gap-3 p-3 sm:p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">

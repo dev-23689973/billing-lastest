@@ -14,8 +14,6 @@ export function StaffHubStatusCell({
   username: string;
   value: string;
   inlineApiPath?: string;
-  /** @deprecated Toggle is always used in table and detail panel. */
-  inDetailPanel?: boolean;
 }) {
   return (
     <div className="flex w-full min-w-0 justify-center">

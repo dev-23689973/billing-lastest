@@ -3,7 +3,7 @@ import { getClientIpFromHeaders, parsePublicIpCandidate } from "@/lib/requestCli
 /**
  * Best-effort public IP for staff login:
  * 1) Proxy / middleware headers on the server request
- * 2) Hidden field from browser (`/api/client-ip` or ipify fallback)
+ * 2) Hidden field from browser (`resolveClientPublicIpAction` or ipify fallback)
  */
 export function resolveLoginClientIp(input: {
   headers: Headers;

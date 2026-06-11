@@ -7066,11 +7066,9 @@ export async function portalOperatorRcdtPrecheckLikePhp(input: {
   creditMonths?: number;
   /** Bonus months to recover (expiry only). */
   bonusMonths?: number;
-  /** @deprecated use creditMonths */
-  credits?: number;
 }): Promise<PortalOperatorRcdtPrecheckResult> {
   const account = input.account.trim();
-  const creditMonths = Math.floor(Number(input.creditMonths ?? input.credits ?? 0));
+  const creditMonths = Math.floor(Number(input.creditMonths ?? 0));
   const bonusMonths = Math.floor(Number(input.bonusMonths ?? 0));
   if (!account) {
     return { ok: false, code: "no_account" };
@@ -7307,10 +7305,8 @@ export async function recoverAccountCreditsByOperator(input: {
   account: string;
   creditMonths?: number;
   bonusMonths?: number;
-  /** @deprecated use creditMonths */
-  credits?: number;
 }): Promise<RenewAccountResult> {
-  const creditMonths = Math.floor(Number(input.creditMonths ?? input.credits ?? 0));
+  const creditMonths = Math.floor(Number(input.creditMonths ?? 0));
   const bonusMonths = Math.floor(Number(input.bonusMonths ?? 0));
   if (
     (!Number.isFinite(creditMonths) || creditMonths < 0 || creditMonths > 2000) ||

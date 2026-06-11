@@ -252,9 +252,6 @@ export const hudElevationSoftHover = cn(
   "hover:shadow-[0_2px_4px_rgb(15_23_42/0.06),0_8px_24px_-4px_rgb(15_23_42/0.1),0_16px_36px_-8px_rgb(15_23_42/0.08)]",
 );
 
-/** @deprecated Alias — use `hudDashShell`. */
-export const hudMutedOuterShell = hudDashShell;
-
 export const hudDashTitle = cn(
   "font-mono text-base font-bold tracking-tight text-slate-900 sm:text-lg dark:text-slate-50",
 );

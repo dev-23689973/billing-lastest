@@ -6,8 +6,8 @@ export const ANNOUNCEMENT_FONT_SIZE_PRESETS = [
   10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 32, 36, 42, 48, 60, 72,
 ] as const;
 
-/** @deprecated Use numeric presets — kept for imports that map label/value pairs. */
-export const ANNOUNCEMENT_FONT_SIZES = ANNOUNCEMENT_FONT_SIZE_PRESETS.map((px) => ({
+/** Label/value pairs for the announcement editor size dropdown. */
+export const announcementFontSizeOptions = ANNOUNCEMENT_FONT_SIZE_PRESETS.map((px) => ({
   label: String(px),
   value: `${px}px`,
 }));

@@ -141,7 +141,7 @@ export function AdminMessagesScreen({
     statsProp,
     recentProp,
     deferStalkerShell,
-    deferStalkerShell && portal ? "/api/operator/message-stalker-shell" : "/api/admin/message-stalker-shell",
+    deferStalkerShell && portal ? "operator" : "admin",
   );
   const stats = deferStalkerShell ? stalkerShell.stats : statsProp;
   const recent = deferStalkerShell ? stalkerShell.recent : recentProp;

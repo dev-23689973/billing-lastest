@@ -535,7 +535,7 @@ export function AdminTransactionsClient({
   isAdminLedger?: boolean;
   /** Load 90-day chart after paint (remote DB). */
   deferCreditFlow?: boolean;
-  /** Paginated ledger + summary via `/api/transactions/*`. */
+  /** Paginated ledger + summary via server actions. */
   fetchLedgerFromApi?: boolean;
 }) {
   const useApiLedger = fetchLedgerFromApi || rowsProp == null;

@@ -2,7 +2,7 @@
 
 export {
   ANNOUNCEMENT_FONT_FAMILIES,
-  ANNOUNCEMENT_FONT_SIZES,
+  announcementFontSizeOptions,
   ANNOUNCEMENT_TEXT_COLORS,
   resolveAnnouncementFontFamily,
 } from "@/lib/announcement-typography";

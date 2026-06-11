@@ -4,7 +4,7 @@ import { useState } from "react";
 import { CalendarRange, Coins, Gift, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
 import { saveDeductionsAction } from "@/actions/forms";
 import { DeductionMonthSelect } from "@/components/admin/DeductionMonthSelect";
-import { StaffHudDashedSubmitButton } from "@/components/admin/StaffHudDashedSubmitButton";
+import { StaffHudDashedButton } from "@/components/admin/StaffHudDashedSubmitButton";
 import { HudFormInput } from "@/components/admin/settings-ui";
 import { Button } from "@/components/ui/button";
 import {
@@ -307,10 +307,10 @@ export function DeductionsConfigForm({
         <p className="min-w-0 text-[10px] leading-snug text-muted-foreground">
           Saves deduction rules and credit recovery settings
         </p>
-        <StaffHudDashedSubmitButton role="reseller" className="w-full min-w-0 sm:w-auto sm:min-w-[10.5rem]">
+        <StaffHudDashedButton type="submit" variant="accent" role="reseller" className="w-full min-w-0 sm:w-auto sm:min-w-[10.5rem]">
           <Save className="h-4 w-4 shrink-0" aria-hidden />
           <span className="text-[11px] font-semibold uppercase tracking-wide">Save changes</span>
-        </StaffHudDashedSubmitButton>
+        </StaffHudDashedButton>
       </footer>
     </form>
   );

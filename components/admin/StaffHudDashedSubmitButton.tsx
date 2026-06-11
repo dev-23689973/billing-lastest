@@ -137,18 +137,3 @@ export function StaffHudDashedButton({
     </button>
   );
 }
-
-/** @deprecated Prefer `StaffHudDashedButton` — kept for existing imports. */
-export function StaffHudDashedSubmitButton({
-  className,
-  children,
-  disabled,
-  role = "reseller",
-  ...rest
-}: Omit<StaffHudDashedButtonProps, "type" | "variant">) {
-  return (
-    <StaffHudDashedButton type="submit" variant="accent" role={role} className={className} disabled={disabled} {...rest}>
-      {children}
-    </StaffHudDashedButton>
-  );
-}

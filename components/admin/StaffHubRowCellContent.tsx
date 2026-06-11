@@ -141,7 +141,6 @@ export function StaffHubRowCellContent({
           username={row.username}
           value={ctx.portal === "manager" ? staffInlineStatusValue(row.status) : row.status}
           inlineApiPath={ctx.inlineApiPath}
-          inDetailPanel={inDetail}
         />
       );
     case "state":

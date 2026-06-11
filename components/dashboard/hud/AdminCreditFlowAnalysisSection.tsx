@@ -16,7 +16,7 @@ import {
   hudDashWalletValue,
   hudDashWalletValueAccent,
   hudDashProgressTrack,
-  hudMutedOuterShell,
+  hudDashShell,
   creditFlowAnalysisGrid,
 } from "@/components/dashboard/hud/hudDashboardLayout";
 import { FitTabularText } from "@/components/dashboard/hud/FitTabularText";
@@ -135,7 +135,7 @@ export function AdminCreditFlowAnalysisSection({
   const summaryColumn = (
         <div
           className={cn(
-            hudMutedOuterShell,
+            hudDashShell,
             "flex min-h-[18rem] flex-1 flex-col p-2.5 sm:min-h-[20rem] sm:p-3 min-[1280px]:h-full min-[1280px]:min-h-0",
           )}
         >
@@ -258,7 +258,7 @@ export function AdminCreditFlowAnalysisSection({
   const chartColumn = (
         <div
           className={cn(
-            hudMutedOuterShell,
+            hudDashShell,
             "flex min-h-[18rem] w-full min-w-0 flex-1 flex-col p-2.5 sm:min-h-[20rem] sm:p-3 min-[1280px]:h-full min-[1280px]:min-h-0",
           )}
         >

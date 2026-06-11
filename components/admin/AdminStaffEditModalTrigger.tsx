@@ -9,7 +9,7 @@ import {
   CreditsActionSuccessModal,
   type CreditsActionSuccessDetails,
 } from "@/components/admin/CreditsActionSuccessModal";
-import { StaffHudDashedButton, StaffHudDashedSubmitButton } from "@/components/admin/StaffHudDashedSubmitButton";
+import { StaffHudDashedButton } from "@/components/admin/StaffHudDashedSubmitButton";
 import { StaffRowActionModal } from "@/components/admin/StaffRowActionModal";
 import { PasswordInputWithToggle } from "@/components/forms/PasswordInputWithToggle";
 import { SearchableFormSelect } from "@/components/forms/SearchableFormSelect";
@@ -1003,13 +1003,13 @@ export function AdminStaffEditModalTrigger({
                                   : "—"}
                               </p>
                             </div>
-                            <StaffHudDashedSubmitButton
+                            <StaffHudDashedButton
                               disabled={savingCredits === "ADD" || !addSelectionAllowed}
                               className="!w-fit self-start px-5 py-2.5"
                             >
                               <Plus className="h-4 w-4 shrink-0" aria-hidden />
                               <span className="text-sm font-semibold uppercase tracking-wide">Apply add credits</span>
-                            </StaffHudDashedSubmitButton>
+                            </StaffHudDashedButton>
                           </form>
                         </div>
                       ) : null}
@@ -1238,13 +1238,13 @@ export function AdminStaffEditModalTrigger({
                       </div>
                     </div>
                     <div className="flex min-w-0 justify-end border-t border-border/60 px-2 pt-3 dark:border-t-cyan-400/10">
-                      <StaffHudDashedSubmitButton
+                      <StaffHudDashedButton
                         disabled={savingProfile || !profileDirty}
                         className="!w-auto max-w-full shrink-0 min-w-[10.5rem]"
                       >
                         <Save className="h-4 w-4 shrink-0" aria-hidden />
                         <span className="text-[11px] font-semibold uppercase tracking-wide">Save changes</span>
-                      </StaffHudDashedSubmitButton>
+                      </StaffHudDashedButton>
                     </div>
                 </form>
               )}

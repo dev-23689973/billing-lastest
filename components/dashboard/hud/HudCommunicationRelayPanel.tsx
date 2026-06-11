@@ -17,7 +17,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useLivingCount, useLivingSmooth, useRechartsEntranceMotion } from "@/components/dashboard/useLivingCount";
 import { IntelGuideBadge } from "@/components/dashboard/IntelGuideBadge";
 import { useDashboardIntel } from "@/components/dashboard/DashboardIntelContext";
-import { hudMutedOuterShell } from "@/components/dashboard/hud/hudDashboardLayout";
+import { hudDashShell } from "@/components/dashboard/hud/hudDashboardLayout";
 import type { AdminMessageTrafficDayStack } from "@/lib/repos/billing";
 import { STALKER_MSG_DELIVERY_HEX } from "@/lib/ui/stalkerMessageDeliveryStatus";
 import { cn } from "@/lib/cn";
@@ -158,7 +158,7 @@ export function HudCommunicationRelayPanel({
   const hasTraffic = confirmed + pending > 0;
 
   return (
-    <div className={cn(hudMutedOuterShell, "flex min-h-0 min-w-0 flex-col", className)}>
+    <div className={cn(hudDashShell, "flex min-h-0 min-w-0 flex-col", className)}>
       <div className="relative z-[1] flex min-h-0 flex-col gap-3 p-3 sm:p-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 flex-1">

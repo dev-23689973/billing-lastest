@@ -1,12 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { apiJson } from "@/lib/dto/apiJson";
-import { toStaffEditorClientDto } from "@/lib/dto/staff";
-import { getDealerById, getSettings } from "@/lib/data";
-import {
-  HIERARCHY_ADD_CREDITS_MAX,
-  parseHierarchyAddCreditApplyPromo,
-  parseRecoverGrantTxIds,
-} from "@/lib/constants/hierarchyCredits";
+import { getDealerById } from "@/lib/data";
+import { parseHierarchyAddCreditApplyPromo, parseRecoverGrantTxIds } from "@/lib/constants/hierarchyCredits";
 import * as repo from "@/lib/repos/billing";
 import { resellerOwnsDealer } from "@/lib/repos/resellerPortal";
 import { getSession } from "@/lib/session";
@@ -28,70 +23,7 @@ function revalidatePaths(...paths: string[]) {
   for (const path of new Set(paths)) revalidatePath(path);
 }
 
-export async function GET(req: Request) {
-  const session = await getSession();
-  if (!session || session.type !== "SRSLR") {
-    return apiJson({ error: "forbidden" }, { status: 403 });
-  }
-
-  const reseller = session.username.trim();
-  const url = new URL(req.url);
-  const type = (url.searchParams.get("type") ?? "").toUpperCase();
-  const username = (url.searchParams.get("username") ?? "").trim();
-  if (!username || type !== "DEALER") {
-    return apiJson({ error: "invalid_request" }, { status: 400 });
-  }
-  if (!(await resellerOwnsDealer(reseller, username))) {
-    return apiJson({ error: "forbidden" }, { status: 403 });
-  }
-
-  const settings = await getSettings().catch(() => null);
-  const hierarchyAddMaxRaw = settings?.hierarchyAddCreditMax ?? String(HIERARCHY_ADD_CREDITS_MAX);
-  const hierarchyAddMax = Math.min(
-    HIERARCHY_ADD_CREDITS_MAX,
-    Math.max(1, Number.parseInt(String(hierarchyAddMaxRaw).trim(), 10) || HIERARCHY_ADD_CREDITS_MAX),
-  );
-  const dealerAddMin = settings ? repo.hierarchyAddCreditsMin("reseller_dealer", settings) : 1;
-
-  const row = await getDealerById(username);
-  if (!row) return apiJson({ error: "not_found" }, { status: 404 });
-
-  const rules = await repo.getPromoBonusRules();
-  const activeClientsForPromo2 = await repo.countActiveClientsForPromo2({ kind: "RSLR", username });
-  const payerCredits = await repo.getCreditBalance(reseller);
-  const addCreditLadders =
-    settings != null
-      ? await repo.buildHierarchyAddCreditRungs({
-          portal: "reseller_dealer",
-          targetUsername: row.username,
-          payerUsername: reseller,
-          settings,
-        })
-      : { promoRungs: [], additionalRungs: [] };
-  const reversibleGrants = await repo.listReversibleHierarchyGrants(row.username);
-
-  return apiJson(
-    toStaffEditorClientDto({
-      type: "DEALER",
-      username: row.username,
-      name: row.name ?? "",
-      password: row.passwordPlaceholder ?? "",
-      status: row.status ?? "ACTIVE",
-      comments: row.comments ?? "",
-      credits: Number(row.credits ?? 0),
-      hierarchyAddMax,
-      hierarchyAddMin: dealerAddMin,
-      username_owner: reseller,
-      payerCredits,
-      addCreditLadders,
-      reversibleGrants,
-      promoP1: rules.p1,
-      promoP2: rules.p2,
-      activeClientsForPromo2,
-    }),
-  );
-}
-
+/** POST-only — loads use `loadStaffEditorModalAction`. */
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session || session.type !== "SRSLR") {

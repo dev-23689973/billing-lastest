@@ -11,7 +11,7 @@ import { HudMessageTrafficBars } from "@/components/dashboard/hud/HudMessageTraf
 import { HudPackageDistributionPanel } from "@/components/dashboard/hud/HudPackageDistributionPanel";
 import { HudTicketLifecycleRings } from "@/components/dashboard/hud/HudTicketLifecycleRings";
 import { useHudWideLayout } from "@/components/dashboard/hud/useHudWideLayout";
-import { hudMutedOuterShell, dashboardRelayPackageGrid, dashboardTicketMessageTrafficGrid } from "@/components/dashboard/hud/hudDashboardLayout";
+import { hudDashShell, dashboardRelayPackageGrid, dashboardTicketMessageTrafficGrid } from "@/components/dashboard/hud/hudDashboardLayout";
 import { buildMessageTrafficSeriesForPeriod } from "@/lib/dashboardPeriodSlice";
 import type { AdminMessageTrafficDayStack } from "@/lib/repos/billing";
 import type { AdminReportPackageRow } from "@/lib/dashboard/types";
@@ -72,7 +72,7 @@ export function AdminTicketMessageHudSection({
       <div className="flex flex-col gap-4 lg:gap-5">
         <div className={dashboardTicketMessageTrafficGrid}>
           {/* Ticket management — rings grid fills card width (no shrink-wrap dead space). */}
-        <div className={cn(hudMutedOuterShell, "flex min-w-0 flex-col min-[1280px]:h-full")}>
+        <div className={cn(hudDashShell, "flex min-w-0 flex-col min-[1280px]:h-full")}>
           <div className="relative z-[1] flex h-full min-h-0 w-full flex-col gap-2.5 p-2.5 sm:gap-3 sm:p-3 sm:px-3.5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
@@ -110,7 +110,7 @@ export function AdminTicketMessageHudSection({
         </div>
 
         {/* Message traffic — fixed plot height when stacked; grows with ticket panel from 1280px */}
-        <div className={cn(hudMutedOuterShell, "flex min-h-0 min-w-0 flex-col min-[1280px]:h-full")}>
+        <div className={cn(hudDashShell, "flex min-h-0 min-w-0 flex-col min-[1280px]:h-full")}>
           <div className="relative z-[1] flex min-h-0 flex-col gap-1.5 p-2 sm:p-2.5 sm:px-3 min-[1280px]:h-full">
             <div className="flex shrink-0 flex-wrap items-start justify-between gap-2">
               <div className="min-w-0 flex-1">

@@ -20,7 +20,7 @@ import { saveManagerAction, saveResellerAction, saveDealerAction } from "@/actio
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { StaffHudDashedSubmitButton } from "@/components/admin/StaffHudDashedSubmitButton";
+import { StaffHudDashedButton } from "@/components/admin/StaffHudDashedSubmitButton";
 import {
   managersToolbarDropdownPanelClass,
   managersToolbarGreyBorder,
@@ -611,10 +611,10 @@ export function AdminAddStaffModal({
                   />
 
                   <div className={cn("flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end", addStaffDividerClass)}>
-                    <StaffHudDashedSubmitButton disabled={!creditsValid}>
+                    <StaffHudDashedButton disabled={!creditsValid}>
                       <UserPlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                       Create manager
-                    </StaffHudDashedSubmitButton>
+                    </StaffHudDashedButton>
                   </div>
                 </form>
               ) : kind === "reseller" ? (
@@ -713,12 +713,12 @@ export function AdminAddStaffModal({
                   />
 
                   <div className={cn("flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end", addStaffDividerClass)}>
-                    <StaffHudDashedSubmitButton
+                    <StaffHudDashedButton
                       disabled={(!isManagerPortal && managerOptions.length === 0) || !creditsValid}
                     >
                       <UserPlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                       Create reseller
-                    </StaffHudDashedSubmitButton>
+                    </StaffHudDashedButton>
                   </div>
                 </form>
               ) : (
@@ -868,12 +868,12 @@ export function AdminAddStaffModal({
                   ) : null}
 
                   <div className={cn("flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end", addStaffDividerClass)}>
-                    <StaffHudDashedSubmitButton
+                    <StaffHudDashedButton
                       disabled={(!isResellerPortal && resellerOptions.length === 0) || !creditsValid}
                     >
                       <UserPlus className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden />
                       Create dealer
-                    </StaffHudDashedSubmitButton>
+                    </StaffHudDashedButton>
                   </div>
                 </form>
               )}
