@@ -254,6 +254,59 @@ export type ReconciledLedgerTotals = {
   reconciled: boolean;
 };
 
+export type LedgerDisplayTotals = ReconciledLedgerTotals & {
+  mode: "wallet" | "admin";
+  /** Primary headline in the wallet summary card. */
+  heroLabel: string;
+  /** When true, show ∞ instead of a wallet balance. */
+  showUnlimitedAccess: boolean;
+};
+
+/** Subtitle account label — avoids bare "admin" reading like a role name. */
+export function formatLedgerAccountLabel(username: string, displayName?: string | null): string {
+  const u = username.trim();
+  const d = displayName?.trim();
+  if (!u) return "—";
+  if (d && d.toLowerCase() !== u.toLowerCase()) return `${d} (${u})`;
+  return u;
+}
+
+export function isAdminLedgerSession(userType: string | null | undefined): boolean {
+  return userType === "ROOT";
+}
+
+/**
+ * Wallet operators reconcile against personal balance; admin ROOT uses period flow only.
+ */
+export function resolveLedgerDisplayTotals(
+  stats: Pick<LedgerAggregate, "creditsIn" | "creditsOut" | "net">,
+  walletBalance: number,
+  reconcileWithWallet: boolean,
+  isAdminLedger: boolean,
+  periodLabel: string,
+): LedgerDisplayTotals {
+  if (isAdminLedger) {
+    return {
+      creditsIn: stats.creditsIn,
+      creditsOut: stats.creditsOut,
+      available: stats.net,
+      net: stats.net,
+      reconciled: true,
+      mode: "admin",
+      heroLabel: reconcileWithWallet ? "Net flow (all loaded)" : `Period net (${periodLabel})`,
+      showUnlimitedAccess: true,
+    };
+  }
+
+  const reconciled = reconcileLedgerTotals(stats, walletBalance, reconcileWithWallet);
+  return {
+    ...reconciled,
+    mode: "wallet",
+    heroLabel: "Available credits",
+    showUnlimitedAccess: false,
+  };
+}
+
 /**
  * Footer / summary totals aligned with wallet balance.
  * When `reconcileWithWallet` is true, out is derived so in − out = available (wallet).

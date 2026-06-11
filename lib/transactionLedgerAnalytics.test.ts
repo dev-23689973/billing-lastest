@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   aggregateLedgerRows,
+  formatLedgerAccountLabel,
   parsePromoGrantBlock,
   parseTransactionMeta,
   reconcileLedgerTotals,
+  resolveLedgerDisplayTotals,
   walletBalanceFromLedgerRows,
 } from "./transactionLedgerAnalytics";
 import type { AdminTransactionRow } from "@/lib/repos/billing";
@@ -149,5 +151,37 @@ describe("reconcileLedgerTotals", () => {
     expect(totals.net).toBe(300);
     expect(totals.available).toBe(967);
     expect(totals.reconciled).toBe(false);
+  });
+});
+
+describe("formatLedgerAccountLabel", () => {
+  it("shows display name with username when they differ", () => {
+    expect(formatLedgerAccountLabel("admin", "ZAAPTV4K")).toBe("ZAAPTV4K (admin)");
+  });
+
+  it("shows username only when display name matches", () => {
+    expect(formatLedgerAccountLabel("admin", "admin")).toBe("admin");
+  });
+});
+
+describe("resolveLedgerDisplayTotals", () => {
+  const stats = { creditsIn: 32000, creditsOut: 60668, net: -28668 };
+
+  it("uses period flow for admin and hides wallet balance semantics", () => {
+    const totals = resolveLedgerDisplayTotals(stats, -1069102, false, true, "7 days");
+    expect(totals.mode).toBe("admin");
+    expect(totals.showUnlimitedAccess).toBe(true);
+    expect(totals.net).toBe(-28668);
+    expect(totals.available).toBe(-28668);
+    expect(totals.heroLabel).toBe("Period net (7 days)");
+    expect(totals.creditsOut).toBe(60668);
+  });
+
+  it("keeps wallet reconciliation for non-admin operators", () => {
+    const totals = resolveLedgerDisplayTotals(stats, 967, false, false, "7 days");
+    expect(totals.mode).toBe("wallet");
+    expect(totals.showUnlimitedAccess).toBe(false);
+    expect(totals.available).toBe(967);
+    expect(totals.heroLabel).toBe("Available credits");
   });
 });

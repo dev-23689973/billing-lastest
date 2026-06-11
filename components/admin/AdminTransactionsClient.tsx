@@ -63,7 +63,7 @@ import {
   inLastNDays,
   parseRowDate,
   parseTransactionMeta,
-  reconcileLedgerTotals,
+  resolveLedgerDisplayTotals,
   type LedgerAggregate,
   type LedgerPeriodId,
 } from "@/lib/transactionLedgerAnalytics";
@@ -521,6 +521,8 @@ export function AdminTransactionsClient({
   creditFlow: creditFlowProp,
   walletBalance,
   ledgerUsername,
+  ledgerDisplayName,
+  isAdminLedger = false,
   deferCreditFlow = false,
   fetchLedgerFromApi = false,
 }: {
@@ -528,6 +530,9 @@ export function AdminTransactionsClient({
   creditFlow: DashboardDayCreditPoint[];
   walletBalance: number;
   ledgerUsername: string;
+  ledgerDisplayName?: string | null;
+  /** ROOT admin — ledger uses period flow, not personal wallet balance. */
+  isAdminLedger?: boolean;
   /** Load 90-day chart after paint (remote DB). */
   deferCreditFlow?: boolean;
   /** Paginated ledger + summary via `/api/transactions/*`. */
@@ -807,17 +812,21 @@ export function AdminTransactionsClient({
     }
   }
   const hasLedgerFilters = typeFilter !== "ALL" || ledgerPreset !== "ALL" || debouncedQ.length > 0;
-  const footerTotals = reconcileLedgerTotals(
+  const footerTotals = resolveLedgerDisplayTotals(
     filteredAgg,
     walletBalance,
     !hasLedgerFilters && ledgerPeriod === "all",
+    isAdminLedger,
+    ledgerPeriod === "7d" ? "7 days" : ledgerPeriod === "30d" ? "30 days" : "all loaded",
   );
   const footerIn = footerTotals.creditsIn;
   const footerOut = footerTotals.creditsOut;
   const footerAvailable = footerTotals.available;
-  const listActivityTitle = footerTotals.reconciled
-    ? "In minus out equals your available credits"
-    : "Credits in and out on filtered rows only";
+  const listActivityTitle = footerTotals.showUnlimitedAccess
+    ? "Credits in and out on filtered rows · admin has unlimited access"
+    : footerTotals.reconciled
+      ? "In minus out equals your available credits"
+      : "Credits in and out on filtered rows only";
 
   return (
     <div className="space-y-4.5">
@@ -827,6 +836,8 @@ export function AdminTransactionsClient({
         allRowCount={allLedgerRows.length}
         walletBalance={walletBalance}
         ledgerUsername={ledgerUsername}
+        ledgerDisplayName={ledgerDisplayName}
+        isAdminLedger={isAdminLedger}
         period={ledgerPeriod}
         onPeriodChange={setLedgerPeriod}
       />
@@ -1265,13 +1276,19 @@ export function AdminTransactionsClient({
                       <span className="hidden text-muted-foreground/90 sm:inline"> out</span>
                     </span>
                     <span className="mx-1.5 text-muted-foreground sm:mx-2">·</span>
-                    <span
-                      className={cn(footerAvailable >= 0 ? "text-violet-300" : "text-rose-400")}
-                      title="Available credits (matches wallet)"
-                    >
-                      <span className="hidden sm:inline">Available </span>
-                      {formatInt(footerAvailable)}
-                    </span>
+                    {footerTotals.showUnlimitedAccess ? (
+                      <span className="font-semibold text-cyan-400" title="Unlimited platform access">
+                        ∞ unlimited
+                      </span>
+                    ) : (
+                      <span
+                        className={cn(footerAvailable >= 0 ? "text-violet-300" : "text-rose-400")}
+                        title="Available credits (matches wallet)"
+                      >
+                        <span className="hidden sm:inline">Available </span>
+                        {formatInt(footerAvailable)}
+                      </span>
+                    )}
                 </span>
               </div>
             </div>

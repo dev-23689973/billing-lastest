@@ -13,9 +13,10 @@ import type { AdminTransactionRow } from "@/lib/repos/billing";
 import {
   aggregateLedgerRows,
   formatLedgerTrendPct,
-  reconcileLedgerTotals,
+  formatLedgerAccountLabel,
+  resolveLedgerDisplayTotals,
   type LedgerPeriodId,
-  type ReconciledLedgerTotals,
+  type LedgerDisplayTotals,
 } from "@/lib/transactionLedgerAnalytics";
 import { HexPrismMetricBar } from "@/components/admin/HexPrismMetricBar";
 import { cn } from "@/lib/cn";
@@ -118,30 +119,54 @@ function IntegratedWalletSummary({
   inTrend,
   outTrend,
 }: {
-  totals: ReconciledLedgerTotals;
+  totals: LedgerDisplayTotals;
   rowCount: number;
   allRowCount?: number;
   periodLabel: string;
   inTrend?: string;
   outTrend?: string;
 }) {
+  const heroValue = totals.showUnlimitedAccess ? totals.net : totals.available;
+
   return (
     <div className="rounded-lg border border-violet-500/25 bg-gradient-to-br from-violet-500/[0.08] via-card/90 to-cyan-500/[0.06] p-4 shadow-sm ring-1 ring-violet-500/15 dark:from-violet-500/10 dark:to-cyan-500/10">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             <Wallet className="h-3.5 w-3.5 text-cyan-400" aria-hidden />
-            Available credits
+            {totals.heroLabel}
           </p>
-          <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-foreground sm:text-4xl">
-            {formatInt(totals.available)}
-          </p>
+          {totals.showUnlimitedAccess ? (
+            <p className="mt-1 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+              <span className="tabular-nums">{formatInt(heroValue)}</span>
+              <span className="ml-2 text-xl font-semibold text-cyan-400/90 sm:text-2xl" title="Unlimited platform access">
+                · ∞
+              </span>
+            </p>
+          ) : (
+            <p className="mt-1 text-3xl font-bold tabular-nums tracking-tight text-foreground sm:text-4xl">
+              {formatInt(heroValue)}
+            </p>
+          )}
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
-            {totals.reconciled ? (
+            {totals.mode === "admin" ? (
+              <>
+                Credits in{" "}
+                <span className="font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                  +{formatInt(totals.creditsIn)}
+                </span>
+                , out{" "}
+                <span className="font-semibold tabular-nums text-amber-700 dark:text-amber-300">
+                  −{formatInt(totals.creditsOut)}
+                </span>{" "}
+                on loaded rows ({periodLabel}). Admin accounts have unlimited platform access — personal wallet
+                balance is not shown.
+              </>
+            ) : totals.reconciled ? (
               <>In minus out equals your available balance ({periodLabel}).</>
             ) : (
               <>
-                All-time available{" "}
+                All-time wallet{" "}
                 <span className="font-semibold tabular-nums text-foreground">{formatInt(totals.available)}</span>.
                 Period ({periodLabel}) net{" "}
                 <span className="font-semibold tabular-nums text-foreground">{formatInt(totals.net)}</span>.
@@ -181,10 +206,16 @@ function IntegratedWalletSummary({
           <span className="mx-1 text-muted-foreground/70">out</span>
         </span>
         <span aria-hidden>·</span>
-        <span>
-          <span className="font-semibold text-violet-600 dark:text-violet-300">{formatInt(totals.available)}</span>
-          <span className="ml-1 text-muted-foreground/70">available</span>
-        </span>
+        {totals.showUnlimitedAccess ? (
+          <span className="font-semibold text-cyan-500 dark:text-cyan-300" title="Unlimited platform access">
+            ∞ unlimited
+          </span>
+        ) : (
+          <span>
+            <span className="font-semibold text-violet-600 dark:text-violet-300">{formatInt(totals.available)}</span>
+            <span className="ml-1 text-muted-foreground/70">available</span>
+          </span>
+        )}
         <span aria-hidden>·</span>
         <span>
           {rowCount} row{rowCount === 1 ? "" : "s"}
@@ -260,6 +291,8 @@ export function AdminTransactionsLedgerPanel({
   allRowCount,
   walletBalance,
   ledgerUsername,
+  ledgerDisplayName,
+  isAdminLedger = false,
   period,
   onPeriodChange,
 }: {
@@ -271,14 +304,19 @@ export function AdminTransactionsLedgerPanel({
   allRowCount?: number;
   walletBalance: number;
   ledgerUsername: string;
+  ledgerDisplayName?: string | null;
+  /** ROOT admin — period flow only, no personal wallet balance. */
+  isAdminLedger?: boolean;
   period: LedgerPeriodId;
   onPeriodChange: (next: LedgerPeriodId) => void;
 }) {
   const stats = useMemo(() => aggregateLedgerRows(rows), [rows]);
+  const periodLabel = PERIOD_LABELS[period];
+  const accountLabel = formatLedgerAccountLabel(ledgerUsername, ledgerDisplayName);
 
   const displayTotals = useMemo(
-    () => reconcileLedgerTotals(stats, walletBalance, period === "all"),
-    [stats, walletBalance, period],
+    () => resolveLedgerDisplayTotals(stats, walletBalance, period === "all", isAdminLedger, periodLabel),
+    [stats, walletBalance, period, isAdminLedger, periodLabel],
   );
 
   const prevPeriodRows = useMemo(() => {
@@ -300,7 +338,6 @@ export function AdminTransactionsLedgerPanel({
   const prevStats = useMemo(() => aggregateLedgerRows(prevPeriodRows), [prevPeriodRows]);
   const inTrend = formatLedgerTrendPct(displayTotals.creditsIn, prevStats.creditsIn);
   const outTrend = formatLedgerTrendPct(displayTotals.creditsOut, prevStats.creditsOut);
-  const periodLabel = PERIOD_LABELS[period];
 
   const categoryBars = useMemo(() => {
     const entries = Object.entries(stats.byCategory).filter(([, v]) => v.count > 0);
@@ -338,8 +375,15 @@ export function AdminTransactionsLedgerPanel({
               Wallet & credit intelligence
             </h2>
             <p className="mt-1 max-w-2xl text-xs leading-relaxed text-muted-foreground">
-              Live totals from billing <span className="font-mono text-foreground/90">transactions</span> for{" "}
-              <span className="font-semibold text-foreground">{ledgerUsername || "—"}</span>. Promo lines parse{" "}
+              Live totals from billing <span className="font-mono text-foreground/90">transactions</span> for account{" "}
+              <span className="font-semibold text-foreground">{accountLabel}</span>
+              {isAdminLedger ? (
+                <>
+                  {" "}
+                  <span className="text-foreground/80">(admin · unlimited access)</span>
+                </>
+              ) : null}
+              . Promo lines parse{" "}
               <span className="font-mono text-[10px]">[promo_grant:…]</span> and{" "}
               <span className="font-mono text-[10px]">[grant_meta:…]</span> tags in remarks.
             </p>
