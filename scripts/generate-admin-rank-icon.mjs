@@ -5,37 +5,28 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..", "public", "images", "promo-ranks");
 const srcPath = path.join(root, "_originals", "admin.png");
-const outPath = path.join(root, "icons", "admin.png");
-const out2xPath = path.join(root, "icons", "admin@2x.png");
+const iconsDir = path.join(root, "icons");
 
-/** Expanded banner — 5:1 crest from `_originals/admin.png`. */
-const WIDTH = 440;
-const HEIGHT = 88;
+/** Sidebar strip: 7 icons in one row, no frame (7:1). */
+const STRIP_WIDTH = 336;
+const STRIP_HEIGHT = 48;
 
-function backdropAlpha(r, g, b, a) {
+/** Keep medals/gems/infinity; remove navy panel and connector bars. */
+function iconStripAlpha(r, g, b, a) {
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const chroma = max - min;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  const sat = max === 0 ? 0 : chroma / max;
 
-  if (max < 42 && chroma < 22) {
-    return 0;
-  }
-
-  if (min > 150 && chroma < 30) {
-    return 0;
-  }
-  if (min > 115 && max > 170 && chroma < 24) {
-    return 0;
-  }
-
-  if (max < 58 && chroma < 24) {
-    return Math.round(((max - 42) / 16) * a);
-  }
-
-  if (min > 135 && chroma < 32) {
-    return Math.round(((170 - min) / 35) * a);
-  }
-
+  if (max < 24 && chroma < 18) return 0;
+  if (b > 130 && g > 100 && r < 130 && lum > 70) return a;
+  if (sat > 0.32 && lum > 52) return a;
+  if (lum > 115 && sat > 0.12) return a;
+  if (max < 88 && b >= r - 12 && lum < 72) return 0;
+  if (lum < 88 && sat < 0.38) return 0;
+  if (lum < 105 && sat < 0.24) return Math.round(a * 0.08);
+  if (lum < 48) return Math.round((lum / 48) * a * 0.08);
   return a;
 }
 
@@ -43,7 +34,7 @@ async function knockOutBackdrop(input) {
   const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
 
   for (let i = 0; i < data.length; i += 4) {
-    data[i + 3] = backdropAlpha(data[i], data[i + 1], data[i + 2], data[i + 3]);
+    data[i + 3] = iconStripAlpha(data[i], data[i + 1], data[i + 2], data[i + 3]);
   }
 
   return sharp(data, {
@@ -51,22 +42,75 @@ async function knockOutBackdrop(input) {
   });
 }
 
-async function prepareSource() {
-  const knocked = await knockOutBackdrop(srcPath);
-  const trimmed = await knockOutBackdrop(await knocked.trim().png().toBuffer());
+/** Crop to rows that actually contain icon pixels (drops top/bottom gold bars). */
+async function cropToContentRows(image) {
+  const { data, info } = await sharp(await image.png().toBuffer())
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
 
-  const lightened = await trimmed
-    .modulate({ brightness: 1.58, saturation: 1.32, lightness: 1.22 })
-    .linear(1.42, -14)
-    .gamma(1.14)
-    .normalise()
-    .png()
-    .toBuffer();
+  let minY = info.height;
+  let maxY = 0;
+  const threshold = info.width * 6;
 
-  return knockOutBackdrop(lightened);
+  for (let y = 0; y < info.height; y++) {
+    let rowAlpha = 0;
+    for (let x = 0; x < info.width; x++) {
+      rowAlpha += data[(y * info.width + x) * 4 + 3];
+    }
+    if (rowAlpha > threshold) {
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    }
+  }
+
+  if (minY >= maxY) return image;
+
+  const pad = Math.max(1, Math.floor((maxY - minY) * 0.04));
+  return sharp(await image.png().toBuffer()).extract({
+    left: 0,
+    top: Math.max(0, minY - pad),
+    width: info.width,
+    height: Math.min(info.height, maxY - minY + 1 + pad * 2),
+  });
 }
 
-async function exportIcon(prepared, width, height, dest) {
+async function prepareIconStrip() {
+  const meta = await sharp(srcPath).metadata();
+  const cropTop = Math.floor(meta.height * 0.34);
+  const cropHeight = Math.floor(meta.height * 0.3);
+
+  let pipe = sharp(srcPath).extract({
+    left: 0,
+    top: cropTop,
+    width: meta.width,
+    height: cropHeight,
+  });
+
+  pipe = await knockOutBackdrop(await pipe.png().toBuffer());
+  pipe = await knockOutBackdrop(await pipe.trim().png().toBuffer());
+
+  const trimmed = await pipe.metadata();
+  const insetX = Math.floor(trimmed.width * 0.08);
+  const innerW = trimmed.width - insetX * 2;
+
+  pipe = sharp(await pipe.png().toBuffer()).extract({
+    left: insetX,
+    top: 0,
+    width: innerW,
+    height: trimmed.height,
+  });
+
+  pipe = await knockOutBackdrop(
+    await pipe.modulate({ brightness: 1.28, saturation: 1.16 }).linear(1.14, -4).png().toBuffer(),
+  );
+  pipe = await cropToContentRows(pipe);
+  pipe = await knockOutBackdrop(await pipe.trim().png().toBuffer());
+
+  return pipe;
+}
+
+async function exportStrip(prepared, width, height, dest) {
   await prepared
     .clone()
     .resize(width, height, {
@@ -78,11 +122,12 @@ async function exportIcon(prepared, width, height, dest) {
     .toFile(dest);
 }
 
-const prepared = await prepareSource();
-await exportIcon(prepared, WIDTH, HEIGHT, outPath);
-await exportIcon(prepared, WIDTH * 2, HEIGHT * 2, out2xPath);
+const prepared = await prepareIconStrip();
+const outPath = path.join(iconsDir, "admin.png");
+const out2xPath = path.join(iconsDir, "admin@2x.png");
+
+await exportStrip(prepared, STRIP_WIDTH, STRIP_HEIGHT, outPath);
+await exportStrip(prepared, STRIP_WIDTH * 2, STRIP_HEIGHT * 2, out2xPath);
 
 const outMeta = await sharp(outPath).metadata();
-const corner = await sharp(outPath).extract({ left: 0, top: 0, width: 1, height: 1 }).raw().toBuffer();
-console.log(`Wrote ${outPath} (${outMeta.width}×${outMeta.height}, alpha=${outMeta.hasAlpha})`);
-console.log(`Corner RGBA: ${[...corner].join(",")}`);
+console.log(`Wrote admin.png (${outMeta.width}×${outMeta.height}, icon strip — do not slice into columns)`);

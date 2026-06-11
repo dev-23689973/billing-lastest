@@ -7,31 +7,10 @@ import {
   type ActivityRank,
 } from "@/lib/promoActivityBadge";
 import {
-  ADMIN_RANK_DISPLAY_HEIGHT_PX,
-  ADMIN_RANK_DISPLAY_WIDTH_PX,
-  ADMIN_RANK_IMAGE,
-  ADMIN_RANK_IMAGE_2X,
   PROMO_RANK_SLOT_DISPLAY_PX,
   VIP_RANK_IMAGE,
   VIP_RANK_IMAGE_2X,
 } from "@/lib/promoActivityRankAssets";
-
-function AdminRankIcon() {
-  return (
-    <span className="promo-activity-rank__icon promo-activity-rank__icon--active inline-flex shrink-0 items-center justify-center" aria-hidden>
-      <img
-        src={ADMIN_RANK_IMAGE}
-        srcSet={`${ADMIN_RANK_IMAGE} 1x, ${ADMIN_RANK_IMAGE_2X} 2x`}
-        alt="Admin"
-        width={ADMIN_RANK_DISPLAY_WIDTH_PX}
-        height={ADMIN_RANK_DISPLAY_HEIGHT_PX}
-        className="promo-activity-rank__img promo-activity-rank__img--admin h-[2.1875rem] w-[11rem] sm:h-[2.375rem] sm:w-[12rem]"
-        draggable={false}
-        decoding="async"
-      />
-    </span>
-  );
-}
 
 function VipRankIcon({ alt, active }: { alt: string; active: boolean }) {
   return (
@@ -97,7 +76,9 @@ export function PromoActivityRankBadge({
         tabIndex={showHoverTip ? 0 : undefined}
         role="img"
       >
-        <AdminRankIcon />
+        {Array.from({ length: ACTIVITY_RANK_SLOT_COUNT }, (_, index) => (
+          <VipRankIcon key={index} alt="VIP" active />
+        ))}
         {showHoverTip ? (
           <span className="promo-activity-rank__tip" role="tooltip">
             <span className="promo-activity-rank__tipLine">{hoverStatusLine}</span>

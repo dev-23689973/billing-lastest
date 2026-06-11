@@ -2496,34 +2496,22 @@ html {
   .promo-activity-rank[data-rank="vip"] .promo-activity-rank__icon--active {
     filter: drop-shadow(0 0 5px rgb(251 191 36 / 0.75));
   }
-  .promo-activity-rank__img--admin {
-    image-rendering: auto;
-    -webkit-font-smoothing: antialiased;
-  }
   .promo-activity-rank--admin .promo-activity-rank__icon {
     background: transparent;
   }
-  .promo-activity-rank--admin .promo-activity-rank__img--admin {
-    display: block;
-    filter:
-      brightness(1.06)
-      saturate(1.08)
-      drop-shadow(0 1px 5px rgb(0 0 0 / 0.22))
-      drop-shadow(0 0 16px rgb(34 211 238 / 0.28));
-  }
   .promo-activity-rank--admin.sidebar-brand-activity-badge,
   .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
-    min-height: 2.1875rem;
+    min-height: 1.125rem;
   }
   @media (min-width: 640px) {
     .promo-activity-rank--admin.sidebar-brand-activity-badge,
     .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
-      min-height: 2.375rem;
+      min-height: 1.25rem;
     }
   }
   .promo-activity-rank--admin .promo-activity-rank__icon--active {
-    transform: none;
-    filter: none;
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 5px rgb(251 191 36 / 0.75));
   }
   .promo-activity-rank__icon--disabled {
     opacity: 0.1;
