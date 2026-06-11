@@ -189,7 +189,7 @@ function TierTable({
                         <PromoActivityRankBadge
                           rank={badgeLevel.rank}
                           litCount={badgeLevel.count}
-                          className="gap-0 [&_.promo-activity-rank__icon]:text-[10px] sm:[&_.promo-activity-rank__icon]:text-xs"
+                          className="gap-0 [&_.promo-activity-rank__img]:h-3.5 [&_.promo-activity-rank__img]:w-3.5 sm:[&_.promo-activity-rank__img]:h-4 sm:[&_.promo-activity-rank__img]:w-4"
                           title={`${badgeLevel.rank} ${badgeLevel.count}/5`}
                           ariaLabel={activityBadgeAriaLabel(badgeLevel)}
                         />

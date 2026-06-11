@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
 import { BillingBrandTitle } from "@/components/theme/BillingBrandTitle";
 import { LivingBillingLogo } from "@/components/theme/LivingBillingLogo";
 import { PromoActivityRankBadge, adminActivityBadgeHoverLines } from "@/components/theme/PromoActivityRankBadge";
-import { activityBadgeAriaLabel, activityBadgeHoverText, activityBadgeTitle, ACTIVITY_RANK_SLOT_COUNT } from "@/lib/promoActivityBadge";
+import { activityBadgeAriaLabel, activityBadgeHoverText, activityBadgeTitle } from "@/lib/promoActivityBadge";
 import { getAdminNavShellItems, isAdminNavActive, type AdminNavShellItem } from "@/lib/admin-nav-shell";
 import type { PortalBase } from "@/lib/portal-nav";
 import { getPortalNavItems, isPortalNavActive } from "@/lib/portal-nav";
@@ -47,11 +47,11 @@ export function AdminSidebar({
   const rankBadge =
     isAdminSession ? (
       <PromoActivityRankBadge
-        rank="diamond"
-        litCount={ACTIVITY_RANK_SLOT_COUNT}
+        variant="admin"
+        rank={null}
         className="sidebar-brand-activity-badge mt-1"
-        title="Admin · Diamond 5/5"
-        ariaLabel={`${ACTIVITY_RANK_SLOT_COUNT} of ${ACTIVITY_RANK_SLOT_COUNT} Diamond badges`}
+        title="Admin"
+        ariaLabel="Admin rank badge"
         hoverStatusLine={adminHover.statusLine}
         hoverRemainLine={adminHover.remainLine}
       />

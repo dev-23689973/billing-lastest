@@ -26,7 +26,6 @@ import {
   activityBadgeAriaLabel,
   activityBadgeHoverText,
   activityBadgeTitle,
-  ACTIVITY_RANK_SLOT_COUNT,
 } from "@/lib/promoActivityBadge";
 import type { SessionPayload } from "@/lib/session";
 import { rsTextCaption, rsTextKicker } from "@/lib/ui/responsiveScale";
@@ -148,7 +147,7 @@ export function MobileBillingProfileCard({
             <p className={cn(rsTextKicker, "sidebar-brand-session__label m-0")}>Activity tier</p>
             <p className={cn(hudDashMutedCaption, "mt-0.5 normal-case tracking-normal")}>
               {isAdminSession
-                ? "Full diamond status on admin accounts"
+                ? "Admin rank badge"
                 : "Earn more active clients to unlock badges"}
             </p>
           </div>
@@ -157,11 +156,11 @@ export function MobileBillingProfileCard({
               <div className="h-5 w-32 animate-pulse rounded-full bg-slate-200/80 dark:bg-slate-700/60" />
             ) : isAdminSession ? (
               <PromoActivityRankBadge
-                rank="diamond"
-                litCount={ACTIVITY_RANK_SLOT_COUNT}
+                variant="admin"
+                rank={null}
                 className="sidebar-brand-activity-badge"
-                title="Admin · Diamond 5/5"
-                ariaLabel={`${ACTIVITY_RANK_SLOT_COUNT} of ${ACTIVITY_RANK_SLOT_COUNT} Diamond badges`}
+                title="Admin"
+                ariaLabel="Admin rank badge"
                 hoverStatusLine={adminHover.statusLine}
                 hoverRemainLine={adminHover.remainLine}
               />

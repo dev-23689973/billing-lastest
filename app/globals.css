@@ -2478,6 +2478,11 @@ html {
     display: inline-flex;
     transition: opacity 0.2s ease, filter 0.2s ease, transform 0.2s ease;
   }
+  .promo-activity-rank__img {
+    display: block;
+    object-fit: contain;
+    user-select: none;
+  }
   .promo-activity-rank__icon--active {
     opacity: 1;
     transform: scale(1.06);
@@ -2485,6 +2490,10 @@ html {
   }
   .promo-activity-rank[data-rank="vip"] .promo-activity-rank__icon--active {
     filter: drop-shadow(0 0 5px rgb(251 191 36 / 0.75));
+  }
+  .promo-activity-rank--admin .promo-activity-rank__icon--active {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 6px rgb(34 211 238 / 0.45));
   }
   .promo-activity-rank__icon--disabled {
     opacity: 0.1;
