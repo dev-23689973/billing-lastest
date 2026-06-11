@@ -50,18 +50,6 @@ export const dashboardCreditFlowSummaryCell =
 export const dashboardCreditFlowChartCell =
   "dashboard-credit-flow-chart flex h-full min-h-0 w-full min-w-0 flex-col";
 
-/** @deprecated Use `dashboardCreditFlowResponsiveLayout` cells. */
-export const dashboardCalendarCompactRowClass = dashboardCreditFlowCalendarCell;
-
-/** @deprecated Use `dashboardCreditFlowResponsiveLayout`. */
-export const dashboardCompactSummaryCalendarRow = dashboardCreditFlowResponsiveLayout;
-
-/** @deprecated Removed — chart lives in `dashboardCreditFlowChartCell`. */
-export const dashboardCreditFlowCompactChartOnly = "contents";
-
-/** @deprecated No longer used — avoid duplicate credit-flow sections. */
-export const dashboardHudWideOnlyBlock = "contents";
-
 /** Ticket lifecycle rings — always one row (4 columns). */
 export const dashboardTicketLifecycleRingsGrid =
   "grid w-full min-w-0 grid-cols-4 grid-rows-1 items-end gap-x-1.5 py-0.5 sm:gap-x-2.5 sm:py-1 min-[1280px]:gap-x-3.5 min-[1280px]:py-1.5";
@@ -69,12 +57,6 @@ export const dashboardTicketLifecycleRingsGrid =
 /** Communication relay + package distribution — stacked below 1440px; side-by-side from 1440px (always visible). */
 export const dashboardRelayPackageGrid =
   "grid min-w-0 grid-cols-1 items-stretch gap-4 sm:gap-5 min-[1440px]:grid-cols-2 min-[1440px]:items-start min-[1440px]:gap-5 xl:gap-6";
-
-/** @deprecated Use `dashboardRelayPackageGrid`. */
-export const dashboardHudWideOnlyGrid = dashboardRelayPackageGrid;
-
-/** @deprecated Use `dashboardHudTopPulseGaugesLayout`. */
-export const dashboardHudTopThreeColumnLayout = dashboardHudTopPulseGaugesLayout;
 
 /** Uniform horizontal gap for HUD feed tables. */
 export const hudFeedTableGap = "gap-x-2.5 sm:gap-x-3 md:gap-x-4";
@@ -251,15 +233,6 @@ export function hudFeedCellLine(primary: string, secondary?: string | null): str
   const sub = secondary?.trim();
   return sub ? `${main} · ${sub}` : main;
 }
-
-/** @deprecated Use `hudFeedCard*` tokens */
-export const hudFeedTableTextLeaderboard = hudFeedCardTableText;
-export const hudFeedTablePadLeaderboard = hudFeedCardTablePad;
-export const hudFeedTableLeaderboardHeaderCell = hudFeedCardHeaderCell;
-export const hudFeedTableLeaderboardBodyCell = hudFeedCardBodyCell;
-export const hudFeedTableLeaderboardCellRight = hudFeedCardCellRight;
-export const hudLeaderboardCardBody = hudFeedCardBody;
-export const hudLeaderboardCardHeader = hudFeedCardHeader;
 
 /** Outer HUD panel — glass border; living backdrop visible in both themes. */
 export const hudDashShell = cn(

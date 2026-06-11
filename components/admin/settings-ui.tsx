@@ -40,12 +40,6 @@ export const settingsSectionKickerClass = cn("flex items-center gap-2 text-cyan-
 export const settingsInsetPanelClass =
   "rounded-xl border border-border/60 bg-muted/10 p-4 sm:p-5 dark:bg-white/[0.02]";
 
-/** @deprecated Use `hudFormControlShellClass` — kept for imports. */
-export const settingsControlShellClass = hudFormControlShellClass;
-
-/** @deprecated Use `hudFormInputInnerClass` — kept for imports. */
-export const settingsInputClass = hudFormInputInnerClass;
-
 export const settingsInputIconClass = cn(rsIconSm, "self-center text-cyan-400/75");
 
 /** Side-by-side fields — inputs share one baseline when label/hint heights differ. */

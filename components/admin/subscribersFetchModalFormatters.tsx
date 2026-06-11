@@ -1,12 +1,12 @@
 import { ReceiverOnlineIconBadge } from "@/components/admin/HierarchyTableBadges";
 import { cn } from "@/lib/cn";
-import type { SubscriberFetchModalRow } from "@/lib/dto/subscribers";
+import type { SubscriberListClientRow } from "@/lib/dto/subscribers";
 
 const ACCOUNT_OFF = 1;
 
 export type SubscribersHierarchyColumnMode = "hidden" | "dealer" | "dealer-reseller" | "full";
 
-export function statusLabel(r: SubscriberFetchModalRow): string {
+export function statusLabel(r: SubscriberListClientRow): string {
   if (r.status === ACCOUNT_OFF) return "Inactive";
   return "Active";
 }
@@ -71,7 +71,7 @@ export function relativeTone(raw: string | null): string {
   return "text-slate-700 dark:text-slate-200";
 }
 
-export function hierarchySortText(r: SubscriberFetchModalRow, mode: SubscribersHierarchyColumnMode) {
+export function hierarchySortText(r: SubscriberListClientRow, mode: SubscribersHierarchyColumnMode) {
   const dealer = String(r.dealer ?? "").toLowerCase();
   if (mode === "hidden" || mode === "dealer") return dealer;
   const reseller = String(r.reseller ?? "").toLowerCase();
@@ -79,7 +79,7 @@ export function hierarchySortText(r: SubscriberFetchModalRow, mode: SubscribersH
   return `${dealer}/${reseller}/${String(r.manager ?? "").toLowerCase()}`;
 }
 
-export function HierarchyCell({ row, mode }: { row: SubscriberFetchModalRow; mode: SubscribersHierarchyColumnMode }) {
+export function HierarchyCell({ row, mode }: { row: SubscriberListClientRow; mode: SubscribersHierarchyColumnMode }) {
   if (mode === "dealer") {
     return <span className="text-amber-700 dark:text-amber-200">{row.dealer || "-"}</span>;
   }
@@ -102,7 +102,7 @@ export function HierarchyCell({ row, mode }: { row: SubscriberFetchModalRow; mod
   );
 }
 
-export function StatusBadge({ r }: { r: SubscriberFetchModalRow }) {
+export function StatusBadge({ r }: { r: SubscriberListClientRow }) {
   return (
     <span
       className={cn(
@@ -118,7 +118,7 @@ export function StatusBadge({ r }: { r: SubscriberFetchModalRow }) {
   );
 }
 
-export function DeviceCell({ r }: { r: SubscriberFetchModalRow }) {
+export function DeviceCell({ r }: { r: SubscriberListClientRow }) {
   return (
     <span className="inline-flex min-w-0 items-center justify-center gap-1.5">
       <ReceiverOnlineIconBadge online={r.receiverOnline} />

@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  MOBILE_DEFAULT_STAFF_COLS_QUERY,
   STAFF_LIST_ALL_COLUMN_IDS,
   parseStaffListColsFromSearchParam,
   staffListColsQueryFromSet,
@@ -34,7 +33,6 @@ describe("parseStaffListColsFromSearchParam", () => {
 
 describe("STAFF_LIST_ALL_COLUMN_IDS", () => {
   it("includes every managers staff-list column", () => {
-    expect(MOBILE_DEFAULT_STAFF_COLS_QUERY).toBe(STAFF_LIST_ALL_COLUMN_IDS.join(","));
     expect(STAFF_LIST_ALL_COLUMN_IDS).toContain("name");
     expect(STAFF_LIST_ALL_COLUMN_IDS).toContain("createdAt");
     expect(STAFF_LIST_ALL_COLUMN_IDS).toHaveLength(12);

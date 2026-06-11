@@ -107,7 +107,6 @@ export {
   buildWalletBalanceRecoverOption,
   grantWalletDebitAmount,
   hierarchyGrantPrincipalSpent,
-  hierarchyRecoverableBaseCredits,
   hierarchyRecoverablePrincipalRefund,
   hierarchyRecoverWalletSlice,
   resolveRecoverDebitAmounts,

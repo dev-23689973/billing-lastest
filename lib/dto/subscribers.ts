@@ -12,14 +12,6 @@ export function toSubscriberListClientRows(rows: AccountListRow[]): SubscriberLi
   return rows.map(toSubscriberListClientRow);
 }
 
-/** @deprecated Use `toSubscriberListClientRows` — modal APIs now return full list rows. */
-export function toSubscriberApiRows(rows: AccountListRow[]) {
-  return toSubscriberListClientRows(rows);
-}
-
-/** @deprecated Use `SubscriberListClientRow`. */
-export type SubscriberFetchModalRow = SubscriberListClientRow;
-
 /** End-user edit page / modal — password and parent PIN never sent to client. */
 export function toEndUserEditClientDto<T extends { password?: string; parentPin?: string }>(
   user: T,

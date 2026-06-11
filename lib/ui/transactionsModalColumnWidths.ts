@@ -36,14 +36,3 @@ export function buildTransactionModalColWidths(
   }
   return cols;
 }
-
-/** @deprecated Legacy export for non-fluid tables. */
-export const TRANSACTIONS_MODAL_FIXED_COL_WIDTH_REM: Record<string, number> = {
-  type: 4.75,
-  credits: 4,
-  months: 3.5,
-  account: 9,
-  coverageStart: 6.5,
-  coverageEnd: 6.5,
-  timestamp: 9.5,
-};

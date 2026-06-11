@@ -76,15 +76,6 @@ export function maxTotalRecoverableMonthsOff(
   return allowed;
 }
 
-/** @deprecated Use `maxTotalRecoverableMonthsOff`. */
-export function maxRecoverableMonthsOffExpiry(
-  expiry: Date,
-  startDate: Date | null,
-  now: Date = new Date(),
-): number {
-  return maxTotalRecoverableMonthsOff(expiry, startDate, now);
-}
-
 export function capPoolsByRecoverableSpan(
   creditMonths: number,
   bonusMonths: number,

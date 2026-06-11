@@ -94,11 +94,6 @@ export const staffHubActionsColClass = cn(
 
 export const STAFF_HUB_RESPONSIVE_HIDE_COLUMN_IDS = new Set(Object.keys(STAFF_HUB_COL_DETAIL_PANEL_CLASS));
 
-/** @deprecated Use staffHubColTableClass */
-export function staffHubColVisibilityClass(columnId: string): string {
-  return staffHubColTableClass(columnId);
-}
-
 export function staffHubHeaderLabelClass(columnId: string): string | undefined {
   if (columnId === "dealerCount") return "staff-hub-th-dealerCount";
   return undefined;

@@ -127,21 +127,6 @@ export function filterCreateValidityOptionsByDebitCredits(
 
 export { buildRecoverMonthOptions } from "@/lib/billing/subscriberRecoverPools";
 
-/** @deprecated Use `buildRecoverMonthOptions` for recover UI (credit/bonus pools are separate). */
-export function filterValidityOptionsByRecoverablePeriods(
-  options: ValidityOption[],
-  recoverableCredits: number | null | undefined,
-): ValidityOption[] {
-  if (recoverableCredits == null || !Number.isFinite(recoverableCredits)) return [];
-  const max = Math.max(0, Math.floor(recoverableCredits));
-  if (max <= 0) return [];
-  return options.filter((o) => {
-    if (o.value === "FREE_TRIAL" || o.value === "1_MONTH_FREE") return false;
-    const months = Number.parseInt(o.value, 10);
-    return Number.isFinite(months) && months >= 1 && months <= max;
-  });
-}
-
 /** Keep `value` in `options`, or fall back to the first option / `"1"`. */
 export function clampValiditySelection(value: string, options: ValidityOption[]): string {
   if (options.some((o) => o.value === value)) return value;

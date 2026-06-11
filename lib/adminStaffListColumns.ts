@@ -20,12 +20,6 @@ export const STAFF_LIST_ALL_COLUMN_IDS = [
   "totalUsers",
 ] as const;
 
-/** @deprecated Use empty `cols` (all visible). Kept for callers that expect a full column query string. */
-export const MOBILE_DEFAULT_STAFF_COLUMN_IDS = STAFF_LIST_ALL_COLUMN_IDS;
-
-/** @deprecated Omit `cols` from the URL to show every column. */
-export const MOBILE_DEFAULT_STAFF_COLS_QUERY = STAFF_LIST_ALL_COLUMN_IDS.join(",");
-
 export function parseStaffListColsFromSearchParam<T extends string>(
   raw: string | string[] | undefined,
   allowedIds: readonly T[],

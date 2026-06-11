@@ -8,11 +8,11 @@ import {
   type SubscribersFetchModalVisibleCols,
 } from "@/components/admin/subscribersFetchModalBuildRowDetails";
 import type { SubscribersHierarchyColumnMode } from "@/components/admin/subscribersFetchModalFormatters";
-import type { SubscriberFetchModalRow } from "@/lib/dto/subscribers";
+import type { SubscriberListClientRow } from "@/lib/dto/subscribers";
 import { useSubscribersFetchModalTableContext } from "@/lib/ui/subscribersFetchModalTableContext";
 
 type Props = {
-  row: SubscriberFetchModalRow;
+  row: SubscriberListClientRow;
   visibleColumns: SubscribersFetchModalVisibleCols;
   hierarchyColumnAvailable: boolean;
   hierarchyColumnMode: SubscribersHierarchyColumnMode;

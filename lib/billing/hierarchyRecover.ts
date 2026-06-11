@@ -62,14 +62,6 @@ export function hierarchyRecoverWalletSlice(
   return { walletDebit, payerRefund, bonusVoid };
 }
 
-/** @deprecated Use hierarchyRecoverablePrincipalRefund — proportional split is no longer used. */
-export function hierarchyRecoverableBaseCredits(
-  remaining: number,
-  grant: Pick<HierarchyReversibleGrant, "base" | "total">,
-): number {
-  return hierarchyRecoverablePrincipalRefund(remaining, grant);
-}
-
 export function grantWalletDebitAmount(
   g: Pick<HierarchyReversibleGrant, "walletDebitAmount" | "total" | "recoverableAmount">,
 ): number {

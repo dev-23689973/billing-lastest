@@ -11,7 +11,7 @@ import {
   formatExpiryShort,
   type SubscribersHierarchyColumnMode,
 } from "@/components/admin/subscribersFetchModalFormatters";
-import type { SubscriberFetchModalRow } from "@/lib/dto/subscribers";
+import type { SubscriberListClientRow } from "@/lib/dto/subscribers";
 import { SUBSCRIBERS_FETCH_MODAL_RESPONSIVE_HIDE_COLUMN_IDS } from "@/lib/ui/subscribersFetchModalResponsiveTable";
 import type { SubscribersFetchModalColumnKey } from "@/lib/ui/subscribersFetchModalResponsiveTable";
 import { cn } from "@/lib/cn";
@@ -80,7 +80,7 @@ export function subscribersFetchModalHasExpandPanel(
 
 function renderDetailValue(
   col: string,
-  row: SubscriberFetchModalRow,
+  row: SubscriberListClientRow,
   hierarchyColumnMode: SubscribersHierarchyColumnMode,
 ): ReactNode {
   switch (col) {
@@ -141,7 +141,7 @@ function renderDetailValue(
 }
 
 export function buildSubscribersFetchModalRowDetailItems(
-  row: SubscriberFetchModalRow,
+  row: SubscriberListClientRow,
   panelColumnIds: readonly string[],
   hierarchyColumnMode: SubscribersHierarchyColumnMode,
   hierarchyLabel?: string | null,

@@ -22,11 +22,6 @@ export const ANNOUNCEMENT_TEXT_COLORS = [
   "#0891b2",
 ] as const;
 
-/** @deprecated Use ANNOUNCEMENT_FONT_SIZE_PRESETS */
-export const ANNOUNCEMENT_HEADING_FONT_SIZES = ANNOUNCEMENT_FONT_SIZES.filter((item) =>
-  [18, 22, 28, 34, 42].includes(Number.parseInt(item.label, 10)),
-);
-
 export const ANNOUNCEMENT_FONT_FAMILIES = [
   { label: "Default", value: "default", stack: "inherit" },
   { label: "Arial", value: "arial", stack: "Arial, Helvetica, sans-serif" },
