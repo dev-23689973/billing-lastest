@@ -1,7 +1,7 @@
 const PROMO_RANK_ICON_BASE = "/images/promo-ranks/icons";
 
-/** Display size for one lit rank slot in the sidebar badge row (matches md breakpoint). */
-export const PROMO_RANK_SLOT_DISPLAY_PX = 48;
+/** Display size for one lit rank slot in the sidebar badge row. */
+export const PROMO_RANK_SLOT_DISPLAY_PX = 20;
 
 /** Crowned diamond art for VIP (and admin badge row). Regenerate: `node scripts/generate-vip-rank-icon.mjs` */
 export const VIP_RANK_IMAGE = `${PROMO_RANK_ICON_BASE}/vip.png`;

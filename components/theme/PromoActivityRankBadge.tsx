@@ -11,8 +11,6 @@ import {
   VIP_RANK_IMAGE,
   VIP_RANK_IMAGE_2X,
 } from "@/lib/promoActivityRankAssets";
-import { rsActivityRankEmoji, rsActivityRankRowGap, rsActivityRankSlot } from "@/lib/ui/responsiveScale";
-
 function VipRankIcon({ alt, active }: { alt: string; active: boolean }) {
   return (
     <span
@@ -28,7 +26,7 @@ function VipRankIcon({ alt, active }: { alt: string; active: boolean }) {
         alt={alt}
         width={PROMO_RANK_SLOT_DISPLAY_PX}
         height={PROMO_RANK_SLOT_DISPLAY_PX}
-        className={cn("promo-activity-rank__img promo-activity-rank__img--slot", rsActivityRankSlot)}
+        className="promo-activity-rank__img promo-activity-rank__img--slot h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5"
         draggable={false}
         decoding="async"
       />
@@ -66,8 +64,7 @@ export function PromoActivityRankBadge({
     return (
       <span
         className={cn(
-          "promo-activity-rank promo-activity-rank--admin inline-flex items-center",
-          rsActivityRankRowGap,
+          "promo-activity-rank promo-activity-rank--admin inline-flex items-center gap-0",
           showHoverTip && "promo-activity-rank--hoverable",
           className,
         )}
@@ -97,8 +94,7 @@ export function PromoActivityRankBadge({
   return (
     <span
       className={cn(
-        "promo-activity-rank inline-flex items-center",
-        rsActivityRankRowGap,
+        "promo-activity-rank inline-flex items-center gap-0",
         showHoverTip && "promo-activity-rank--hoverable",
         className,
       )}
@@ -117,8 +113,7 @@ export function PromoActivityRankBadge({
           <span
             key={index}
             className={cn(
-              "promo-activity-rank__icon inline-flex items-center justify-center",
-              rsActivityRankEmoji,
+              "promo-activity-rank__icon inline-flex items-center justify-center text-sm leading-none sm:text-base",
               active ? "promo-activity-rank__icon--active" : "promo-activity-rank__icon--disabled",
             )}
             aria-hidden

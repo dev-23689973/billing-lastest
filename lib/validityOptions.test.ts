@@ -8,6 +8,7 @@ import {
   filterRenewValidityOptionsByDebitCredits,
   filterValidityOptionsByDebitCredits,
   isCreateOnlyValidityValue,
+  isValidityBonusOption,
 } from "@/lib/validityOptions";
 
 describe("buildMonthDeductionChargedMap", () => {
@@ -99,5 +100,19 @@ describe("filterCreateValidityOptionsByDebitCredits", () => {
     expect(affordable.some((o) => o.value === "FREE_TRIAL")).toBe(true);
     expect(affordable.some((o) => o.value === "1")).toBe(true);
     expect(affordable.some((o) => o.value === "3")).toBe(false);
+  });
+});
+
+describe("isValidityBonusOption", () => {
+  const options = buildValidityOptionsFromDeductionRows(
+    [{ month: 6, month_deduction: 1 }],
+    { monthFree: true, maxMonths: 12 },
+  );
+
+  it("flags free month and promo tiers with bonus months", () => {
+    expect(isValidityBonusOption(options.find((o) => o.value === "FREE_TRIAL")!)).toBe(false);
+    expect(isValidityBonusOption(options.find((o) => o.value === "1_MONTH_FREE")!)).toBe(true);
+    expect(isValidityBonusOption(options.find((o) => o.value === "6")!)).toBe(true);
+    expect(isValidityBonusOption(options.find((o) => o.value === "1")!)).toBe(false);
   });
 });

@@ -19,6 +19,8 @@ import {
 import {
   clampValiditySelection,
   filterCreateValidityOptionsByDebitCredits,
+  isValidityBonusOption,
+  validityBonusOptionTextClass,
 } from "@/lib/validityOptions";
 import { EndUserTariffAndCustomAddons } from "@/components/portal/EndUserTariffAndCustomAddons";
 import { FormField } from "@/components/forms/form-field";
@@ -160,6 +162,14 @@ export function AdminAddUserModal({
     () => filteredValidityOptions.map((o) => ({ value: o.value, label: o.label })),
     [filteredValidityOptions],
   );
+
+  const validityBonusByValue = useMemo(() => {
+    const map = new Map<string, boolean>();
+    for (const o of filteredValidityOptions) {
+      map.set(o.value, isValidityBonusOption(o));
+    }
+    return map;
+  }, [filteredValidityOptions]);
 
   const validityHint = useMemo(() => {
     if (mode !== "add") return undefined;
@@ -501,6 +511,9 @@ export function AdminAddUserModal({
                           className={modalSelectTriggerClass}
                           contentClassName={modalSelectPanelClass}
                           itemClassName={modalSelectItemClass}
+                          getItemClassName={(o) =>
+                            validityBonusByValue.get(o.value) ? validityBonusOptionTextClass : undefined
+                          }
                           itemShowCheck={false}
                           contentViewportClassName="max-h-[min(16rem,var(--radix-select-content-available-height))]"
                         />

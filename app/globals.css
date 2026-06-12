@@ -2376,6 +2376,9 @@ html {
   .mobile-billing-profile-card__kpi {
     min-height: 4.75rem;
   }
+  .mobile-billing-profile-card__badges .promo-activity-rank {
+    gap: 0.25rem;
+  }
   .mobile-billing-profile-card__badges .sidebar-brand-activity-badge {
     min-height: 2.25rem;
   }
@@ -2388,6 +2391,9 @@ html {
     line-height: 1;
   }
   @media (min-width: 640px) {
+    .mobile-billing-profile-card__badges .promo-activity-rank {
+      gap: 0.375rem;
+    }
     .mobile-billing-profile-card__badges .sidebar-brand-activity-badge {
       min-height: 2.5rem;
     }
@@ -2474,16 +2480,12 @@ html {
     color: rgb(34 211 238 / 0.98);
   }
   .sidebar-brand-activity-badge {
-    min-height: 2rem;
+    min-height: 1.125rem;
+    max-width: 100%;
   }
   @media (min-width: 640px) {
     .sidebar-brand-activity-badge {
-      min-height: 2.5rem;
-    }
-  }
-  @media (min-width: 768px) {
-    .sidebar-brand-activity-badge {
-      min-height: 3rem;
+      min-height: 1.25rem;
     }
   }
   .promo-activity-rank--hoverable {
@@ -2564,18 +2566,12 @@ html {
   }
   .promo-activity-rank--admin.sidebar-brand-activity-badge,
   .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
-    min-height: 2rem;
+    min-height: 1.125rem;
   }
   @media (min-width: 640px) {
     .promo-activity-rank--admin.sidebar-brand-activity-badge,
     .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
-      min-height: 2.5rem;
-    }
-  }
-  @media (min-width: 768px) {
-    .promo-activity-rank--admin.sidebar-brand-activity-badge,
-    .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
-      min-height: 3rem;
+      min-height: 1.25rem;
     }
   }
   .promo-activity-rank--admin .promo-activity-rank__icon--active {

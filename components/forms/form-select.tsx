@@ -39,6 +39,8 @@ export type FormSelectProps = {
   contentClassName?: string;
   /** Merged into each `<SelectItem>` (e.g. match a compact trigger’s `text-xs`). */
   itemClassName?: string;
+  /** Optional per-option classes (merged after `itemClassName`). */
+  getItemClassName?: (option: FormSelectOption) => string | undefined;
   /** When false, hides the leading checkmark on each option. */
   itemShowCheck?: boolean;
   /** HUD-style cyan corner brackets on the dropdown panel. */
@@ -77,6 +79,7 @@ export function FormSelect({
   className,
   contentClassName,
   itemClassName,
+  getItemClassName,
   itemShowCheck = true,
   contentHudCorners = false,
   clampMenuToTrigger = false,
@@ -132,7 +135,7 @@ export function FormSelect({
               key={o.value === "" ? EMPTY : o.value}
               value={toRadixValue(o.value)}
               disabled={o.disabled}
-              className={itemClassName}
+              className={cn(itemClassName, getItemClassName?.(o))}
               showCheck={itemShowCheck}
             >
               {o.label}

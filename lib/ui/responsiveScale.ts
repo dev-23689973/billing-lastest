@@ -52,11 +52,8 @@ export const uiBadgeTagClass = cn(rsBadgeBase, rsBadgeText, "rounded-md px-1.5 p
 export const rsBadgeIconBox = "inline-flex h-5 w-5 shrink-0 items-center justify-center sm:h-6 sm:w-6";
 export const rsBadgeIconBoxSm = "inline-flex h-5 min-w-5 shrink-0 items-center justify-center sm:min-w-[1.375rem]";
 
-/** Activity tier rank row — VIP image slots and emoji badges (sidebar + account overview). */
-export const rsActivityRankSlot = "h-8 w-8 shrink-0 sm:h-10 sm:w-10 md:h-12 md:w-12";
-export const rsActivityRankEmoji = "text-2xl leading-none sm:text-3xl md:text-4xl";
-export const rsActivityRankRowGap = "gap-1 sm:gap-1.5 md:gap-2";
-export const rsActivityRankMinH = "min-h-8 sm:min-h-10 md:min-h-12";
+/** Activity tier badge row min-height — mobile account overview only (sidebar keeps compact defaults). */
+export const rsActivityRankMinH = "min-h-9 sm:min-h-10";
 
 export function uiStatusPillClass(colorClass: string, className?: string) {
   return cn(uiBadgePillClass, colorClass, className);

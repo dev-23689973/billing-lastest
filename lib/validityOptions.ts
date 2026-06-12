@@ -127,6 +127,17 @@ export function filterCreateValidityOptionsByDebitCredits(
 
 export { buildRecoverMonthOptions } from "@/lib/billing/subscriberRecoverPools";
 
+/** Create-user / renew rows with promo bonus (free month or charged credits below calendar months). */
+export function isValidityBonusOption(option: ValidityOption): boolean {
+  if (option.value === "1_MONTH_FREE") return true;
+  const months = Number.parseInt(option.value, 10);
+  if (!Number.isFinite(months) || months < 1) return false;
+  return validityOptionChargedCredits(option) < months;
+}
+
+export const validityBonusOptionTextClass =
+  "text-emerald-700 dark:text-emerald-300 data-[highlighted]:text-emerald-700 dark:data-[highlighted]:text-emerald-300 data-[state=checked]:text-emerald-700 dark:data-[state=checked]:text-emerald-300";
+
 /** Keep `value` in `options`, or fall back to the first option / `"1"`. */
 export function clampValiditySelection(value: string, options: ValidityOption[]): string {
   if (options.some((o) => o.value === value)) return value;
