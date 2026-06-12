@@ -11,6 +11,7 @@ import {
   VIP_RANK_IMAGE,
   VIP_RANK_IMAGE_2X,
 } from "@/lib/promoActivityRankAssets";
+import { rsActivityRankEmoji, rsActivityRankRowGap, rsActivityRankSlot } from "@/lib/ui/responsiveScale";
 
 function VipRankIcon({ alt, active }: { alt: string; active: boolean }) {
   return (
@@ -27,7 +28,7 @@ function VipRankIcon({ alt, active }: { alt: string; active: boolean }) {
         alt={alt}
         width={PROMO_RANK_SLOT_DISPLAY_PX}
         height={PROMO_RANK_SLOT_DISPLAY_PX}
-        className="promo-activity-rank__img promo-activity-rank__img--slot h-[1.125rem] w-[1.125rem] sm:h-5 sm:w-5"
+        className={cn("promo-activity-rank__img promo-activity-rank__img--slot", rsActivityRankSlot)}
         draggable={false}
         decoding="async"
       />
@@ -66,6 +67,7 @@ export function PromoActivityRankBadge({
       <span
         className={cn(
           "promo-activity-rank promo-activity-rank--admin inline-flex items-center",
+          rsActivityRankRowGap,
           showHoverTip && "promo-activity-rank--hoverable",
           className,
         )}
@@ -94,7 +96,12 @@ export function PromoActivityRankBadge({
 
   return (
     <span
-      className={cn("promo-activity-rank inline-flex items-center", showHoverTip && "promo-activity-rank--hoverable", className)}
+      className={cn(
+        "promo-activity-rank inline-flex items-center",
+        rsActivityRankRowGap,
+        showHoverTip && "promo-activity-rank--hoverable",
+        className,
+      )}
       data-rank={displayRank}
       title={showHoverTip ? undefined : title}
       aria-label={ariaLabel}
@@ -110,7 +117,8 @@ export function PromoActivityRankBadge({
           <span
             key={index}
             className={cn(
-              "promo-activity-rank__icon inline-flex items-center justify-center text-sm leading-none sm:text-base",
+              "promo-activity-rank__icon inline-flex items-center justify-center",
+              rsActivityRankEmoji,
               active ? "promo-activity-rank__icon--active" : "promo-activity-rank__icon--disabled",
             )}
             aria-hidden

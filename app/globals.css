@@ -2416,11 +2416,16 @@ html {
     color: rgb(34 211 238 / 0.98);
   }
   .sidebar-brand-activity-badge {
-    min-height: 1.125rem;
+    min-height: 2rem;
   }
   @media (min-width: 640px) {
     .sidebar-brand-activity-badge {
-      min-height: 1.25rem;
+      min-height: 2.5rem;
+    }
+  }
+  @media (min-width: 768px) {
+    .sidebar-brand-activity-badge {
+      min-height: 3rem;
     }
   }
   .promo-activity-rank--hoverable {
@@ -2501,12 +2506,18 @@ html {
   }
   .promo-activity-rank--admin.sidebar-brand-activity-badge,
   .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
-    min-height: 1.125rem;
+    min-height: 2rem;
   }
   @media (min-width: 640px) {
     .promo-activity-rank--admin.sidebar-brand-activity-badge,
     .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
-      min-height: 1.25rem;
+      min-height: 2.5rem;
+    }
+  }
+  @media (min-width: 768px) {
+    .promo-activity-rank--admin.sidebar-brand-activity-badge,
+    .sidebar-brand-activity-badge:has(.promo-activity-rank--admin) {
+      min-height: 3rem;
     }
   }
   .promo-activity-rank--admin .promo-activity-rank__icon--active {

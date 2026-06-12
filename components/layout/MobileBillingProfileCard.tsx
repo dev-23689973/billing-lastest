@@ -28,7 +28,7 @@ import {
   activityBadgeTitle,
 } from "@/lib/promoActivityBadge";
 import type { SessionPayload } from "@/lib/session";
-import { rsTextCaption, rsTextKicker } from "@/lib/ui/responsiveScale";
+import { rsActivityRankMinH, rsTextCaption, rsTextKicker } from "@/lib/ui/responsiveScale";
 
 function ProfileMetricRow({
   label,
@@ -139,7 +139,7 @@ export function MobileBillingProfileCard({
       {showActivityTier ? (
         <div
           className={cn(
-            "mt-3 flex flex-col items-center gap-1.5 border-t border-border/40 pt-3",
+            "mt-3 flex flex-col items-center gap-2 border-t border-border/40 pt-3 sm:gap-2.5",
             "dark:border-slate-700/35",
           )}
         >
@@ -151,9 +151,9 @@ export function MobileBillingProfileCard({
                 : "Earn more active clients to unlock badges"}
             </p>
           </div>
-          <div className="flex min-h-[1.75rem] w-full justify-center" aria-hidden={loading}>
+          <div className={cn("flex w-full justify-center", rsActivityRankMinH)} aria-hidden={loading}>
             {loading ? (
-              <div className="h-5 w-32 animate-pulse rounded-full bg-slate-200/80 dark:bg-slate-700/60" />
+              <div className="h-8 w-44 animate-pulse rounded-full bg-slate-200/80 sm:h-10 md:h-12 dark:bg-slate-700/60" />
             ) : isAdminSession ? (
               <PromoActivityRankBadge
                 variant="admin"
