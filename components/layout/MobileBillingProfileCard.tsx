@@ -1,13 +1,17 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Coins } from "lucide-react";
+import { Coins, Users } from "lucide-react";
 import { BillingBrandTitle } from "@/components/theme/BillingBrandTitle";
+import { LivingBillingLogo } from "@/components/theme/LivingBillingLogo";
 import { PromoActivityRankBadge, adminActivityBadgeHoverLines } from "@/components/theme/PromoActivityRankBadge";
 import {
-  hudDashEyebrow,
   hudDashMutedCaption,
   hudDashShell,
+  hudDashWalletLabel,
+  hudDashWalletPanel,
+  hudDashWalletValue,
+  hudDashWalletValueAccent,
   hudElevationSoft,
 } from "@/components/dashboard/hud/hudDashboardLayout";
 import { useBillingHeaderStats } from "@/lib/client/useBillingHeaderStats";
@@ -28,9 +32,9 @@ import {
   activityBadgeTitle,
 } from "@/lib/promoActivityBadge";
 import type { SessionPayload } from "@/lib/session";
-import { rsActivityRankMinH, rsTextCaption, rsTextKicker } from "@/lib/ui/responsiveScale";
+import { rsActivityRankMinH, rsIconSm, rsTextCaption, uiBadgeClass } from "@/lib/ui/responsiveScale";
 
-function ProfileMetricRow({
+function ProfileKpi({
   label,
   hint,
   loading,
@@ -48,20 +52,14 @@ function ProfileMetricRow({
   return (
     <div
       className={cn(
-        "mobile-billing-profile-card__metric rounded-lg border border-border/50 bg-slate-50/50 px-3 py-2.5",
-        "dark:border-slate-700/40 dark:bg-slate-950/35",
-        "transition-opacity duration-300 ease-out",
+        hudDashWalletPanel,
+        "mobile-billing-profile-card__kpi min-w-0 transition-opacity duration-300",
         loading ? "opacity-70" : "opacity-100",
       )}
-      title={failed ? undefined : title}
+      title={failed ? hint : title ?? hint}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className={cn(rsTextKicker, "sidebar-brand-session__label m-0")}>{label}</p>
-          <p className={cn(hudDashMutedCaption, "mt-0.5 normal-case tracking-normal")}>{hint}</p>
-        </div>
-        <div className="flex shrink-0 items-center justify-end self-center">{children}</div>
-      </div>
+      <p className={cn(hudDashWalletLabel, "m-0 truncate")}>{label}</p>
+      <div className="mt-1.5 min-h-[1.75rem] flex items-center">{children}</div>
     </div>
   );
 }
@@ -103,6 +101,9 @@ export function MobileBillingProfileCard({
     : `Active clients: ${activeCount}`;
 
   const showActivityTier = isAdminSession || Boolean(portalBase);
+  const tierHint = isAdminSession
+    ? "Top level · Unlimited access"
+    : "Earn more active clients to unlock badges";
 
   return (
     <section
@@ -110,87 +111,91 @@ export function MobileBillingProfileCard({
         "mobile-billing-profile-card lg:hidden",
         hudDashShell,
         hudElevationSoft,
-        "px-3 py-3 sm:px-4 sm:py-4",
+        "px-3 py-3.5 sm:px-4 sm:py-4",
         className,
       )}
       aria-label="Account overview"
     >
-      <header className="flex flex-col gap-1 text-center">
-        <p className={cn(hudDashEyebrow, "m-0")}>Account overview</p>
-        <BillingBrandTitle size="card" title={panelTitle} className="w-full text-center">
-          {panelTitle}
-        </BillingBrandTitle>
-        <p
+      <header className="mobile-billing-profile-card__brand flex flex-col items-center text-center">
+        <div className="flex flex-col items-center gap-2.5 sm:flex-row sm:gap-3.5">
+          <LivingBillingLogo size="xl" className="mobile-billing-profile-card__logo shrink-0" />
+          <BillingBrandTitle size="card" title={panelTitle} className="w-full text-center sm:w-auto">
+            {panelTitle}
+          </BillingBrandTitle>
+        </div>
+        <div
           className={cn(
-            rsTextCaption,
-            "mx-auto mt-0.5 max-w-full truncate text-muted-foreground transition-opacity duration-300",
+            "mt-2 flex max-w-full flex-wrap items-center justify-center gap-x-2 gap-y-1",
+            "transition-opacity duration-300",
             ready ? "opacity-100" : "opacity-60",
           )}
           title={`Signed in as ${role} · ${session.username}`}
         >
-          <span className="font-medium text-foreground/80">{role}</span>
-          <span className="mx-1 text-border" aria-hidden>
-            ·
+          <span
+            className={cn(
+              uiBadgeClass,
+              "mobile-billing-profile-card__role border-primary/20 bg-primary/10 text-primary dark:border-cyan-500/25 dark:bg-cyan-500/10 dark:text-cyan-300",
+            )}
+          >
+            {role}
           </span>
-          <span>{signedInLine}</span>
-        </p>
+          <span className={cn(rsTextCaption, "min-w-0 truncate text-muted-foreground")}>{signedInLine}</span>
+        </div>
       </header>
 
       {showActivityTier ? (
-        <div
-          className={cn(
-            "mt-3 flex flex-col items-center gap-2 border-t border-border/40 pt-3 sm:gap-2.5",
-            "dark:border-slate-700/35",
-          )}
-        >
-          <div className="w-full text-center">
-            <p className={cn(rsTextKicker, "sidebar-brand-session__label m-0")}>Activity tier</p>
-            <p className={cn(hudDashMutedCaption, "mt-0.5 normal-case tracking-normal")}>
-              {isAdminSession
-                ? "Top level · Unlimited access"
-                : "Earn more active clients to unlock badges"}
-            </p>
-          </div>
-          <div className={cn("flex w-full justify-center", rsActivityRankMinH)} aria-hidden={loading}>
-            {loading ? (
-              <div className="h-8 w-44 animate-pulse rounded-full bg-slate-200/80 sm:h-10 md:h-12 dark:bg-slate-700/60" />
-            ) : isAdminSession ? (
-              <PromoActivityRankBadge
-                variant="admin"
-                rank={null}
-                className="sidebar-brand-activity-badge"
-                title="Admin · Top level · Unlimited"
-                ariaLabel="Admin crest — top level, unlimited access"
-                hoverStatusLine={adminHover.statusLine}
-                hoverRemainLine={adminHover.remainLine}
-              />
-            ) : portalBase && stats && !("error" in stats) ? (
-              <PromoActivityRankBadge
-                rank={activityBadge?.rank ?? null}
-                litCount={activityBadge?.count}
-                className="sidebar-brand-activity-badge"
-                title={activityBadge ? activityBadgeTitle(activityBadge) : undefined}
-                ariaLabel={
-                  activityBadge
-                    ? activityBadgeAriaLabel(activityBadge)
-                    : "Activity badges — earn more active clients to unlock"
-                }
-                hoverStatusLine={
-                  activityBadge ? activityBadgeHoverText(activityBadge).statusLine : undefined
-                }
-                hoverRemainLine={
-                  activityBadge ? activityBadgeHoverText(activityBadge).remainLine : undefined
-                }
-              />
-            ) : null}
+        <div className="mobile-billing-profile-card__tier mt-3.5 rounded-xl border border-border/50 px-3 py-3 sm:px-3.5 sm:py-3.5 dark:border-slate-700/40">
+          <div className="flex flex-col items-center gap-2 text-center sm:gap-2.5">
+            <div className="w-full">
+              <p className={cn(hudDashWalletLabel, "m-0")}>Activity tier</p>
+              <p className={cn(hudDashMutedCaption, "mt-1 normal-case tracking-normal")}>{tierHint}</p>
+            </div>
+            <div
+              className={cn(
+                "flex w-full justify-center py-0.5",
+                "mobile-billing-profile-card__badges",
+                rsActivityRankMinH,
+              )}
+              aria-hidden={loading}
+            >
+              {loading ? (
+                <div className="h-9 w-48 max-w-full animate-pulse rounded-lg bg-slate-200/80 sm:h-10 dark:bg-slate-700/60" />
+              ) : isAdminSession ? (
+                <PromoActivityRankBadge
+                  variant="admin"
+                  rank={null}
+                  className="sidebar-brand-activity-badge"
+                  title="Admin · Top level · Unlimited"
+                  ariaLabel="Admin crest — top level, unlimited access"
+                  hoverStatusLine={adminHover.statusLine}
+                  hoverRemainLine={adminHover.remainLine}
+                />
+              ) : portalBase && stats && !("error" in stats) ? (
+                <PromoActivityRankBadge
+                  rank={activityBadge?.rank ?? null}
+                  litCount={activityBadge?.count}
+                  className="sidebar-brand-activity-badge"
+                  title={activityBadge ? activityBadgeTitle(activityBadge) : undefined}
+                  ariaLabel={
+                    activityBadge
+                      ? activityBadgeAriaLabel(activityBadge)
+                      : "Activity badges — earn more active clients to unlock"
+                  }
+                  hoverStatusLine={
+                    activityBadge ? activityBadgeHoverText(activityBadge).statusLine : undefined
+                  }
+                  hoverRemainLine={
+                    activityBadge ? activityBadgeHoverText(activityBadge).remainLine : undefined
+                  }
+                />
+              ) : null}
+            </div>
           </div>
         </div>
       ) : null}
 
-      <div className="mt-3 space-y-2">
-        <p className={cn(rsTextKicker, "sidebar-brand-session__label m-0 px-0.5")}>At a glance</p>
-
-        <ProfileMetricRow
+      <div className="mt-3.5 grid grid-cols-2 gap-2 sm:gap-2.5">
+        <ProfileKpi
           label={activeMetric.label}
           hint={activeMetric.hint}
           loading={loading}
@@ -198,20 +203,18 @@ export function MobileBillingProfileCard({
           title={ready ? activeTitle : undefined}
         >
           {loading ? (
-            <span className="h-6 w-16 animate-pulse rounded bg-slate-200/80 dark:bg-slate-700/60" aria-hidden />
+            <span className="h-7 w-16 animate-pulse rounded bg-slate-200/80 dark:bg-slate-700/60" aria-hidden />
           ) : failed ? (
             <span className={cn(rsTextCaption, "text-muted-foreground")}>Unavailable</span>
           ) : (
-            <span className="flex items-center gap-1.5">
-              <span className="text-[0.625rem] font-semibold text-cyan-600 dark:text-cyan-400" aria-hidden>
-                ◈
-              </span>
-              <span className="sidebar-brand-session__id tabular-nums">{activeCount}</span>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <Users className={cn(rsIconSm, "text-cyan-600 dark:text-cyan-400")} strokeWidth={2.25} aria-hidden />
+              <span className={cn(hudDashWalletValueAccent, "mt-0 truncate")}>{activeCount}</span>
             </span>
           )}
-        </ProfileMetricRow>
+        </ProfileKpi>
 
-        <ProfileMetricRow
+        <ProfileKpi
           label={creditsMetric.label}
           hint={creditsMetric.hint}
           loading={loading}
@@ -219,23 +222,20 @@ export function MobileBillingProfileCard({
           title={ready && creditsDisplay ? creditsDisplay.title : undefined}
         >
           {loading ? (
-            <span className="h-6 w-14 animate-pulse rounded bg-slate-200/80 dark:bg-slate-700/60" aria-hidden />
+            <span className="h-7 w-14 animate-pulse rounded bg-slate-200/80 dark:bg-slate-700/60" aria-hidden />
           ) : failed ? (
             <span className={cn(rsTextCaption, "text-muted-foreground")}>Unavailable</span>
           ) : creditsDisplay ? (
-            <span
-              className="living-sidebar-hud__pill living-sidebar-hud__pill--credits sidebar-brand-credits__pill inline-flex items-center gap-1.5 border-0 bg-transparent p-0 shadow-none"
-              aria-label={creditsDisplay.ariaLabel}
-            >
-              <span className="living-sidebar-hud__pillIcon" aria-hidden>
-                <Coins className="h-3.5 w-3.5" strokeWidth={2.25} />
+            <span className="flex min-w-0 items-center gap-1.5" aria-label={creditsDisplay.ariaLabel}>
+              <Coins className={cn(rsIconSm, "text-violet-600 dark:text-violet-300")} strokeWidth={2.25} aria-hidden />
+              <span className={cn(hudDashWalletValue, "mt-0 truncate text-violet-700 dark:text-violet-200")}>
+                {creditsDisplay.value}
               </span>
-              <span className="living-sidebar-hud__pillValue tabular-nums">{creditsDisplay.value}</span>
             </span>
           ) : (
             <span className={cn(rsTextCaption, "text-muted-foreground")}>—</span>
           )}
-        </ProfileMetricRow>
+        </ProfileKpi>
       </div>
     </section>
   );
