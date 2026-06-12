@@ -1,18 +1,23 @@
 import Link from "next/link";
 import { ChevronDown, ChevronsUpDown, Settings2 } from "lucide-react";
 import type { FlashToastItem } from "@/components/FlashToasts";
-import { FlashToastsBoundary } from "@/components/FlashToasts";
 import { AdminAddStaffModal } from "@/components/admin/AdminAddStaffModal";
 import { AdminDealerRowActions } from "@/components/admin/AdminDealerRowActions";
-import { AdminStaffEditModalTrigger } from "@/components/admin/AdminStaffEditModalTrigger";
-import { StaffHubListRefreshBridge } from "@/components/admin/StaffHubListRefreshBridge";
-import { AdminUsersListModalTrigger } from "@/components/admin/AdminUsersListModalTrigger";
-import { InlineEditableStaffCell } from "@/components/admin/InlineEditableStaffCell";
-import { StaffHubStatusCell } from "@/components/admin/staffHubResponsiveCells";
 import { ManagersColumnSettings } from "@/components/admin/ManagersColumnSettings";
+import { portalStaffHubRowForDetails } from "@/components/admin/staffHubBuildRowDetails";
+import { StaffHubExpandableRow } from "@/components/admin/StaffHubExpandableRow";
+import { StaffHubRowCellContent } from "@/components/admin/StaffHubRowCellContent";
+import { StaffHubRowDetailsPanel } from "@/components/admin/StaffHubRowDetailsPanel";
+import { StaffHubTableScrollShell } from "@/components/admin/StaffHubTableScrollShell";
+import {
+  STAFF_HUB_TABLE_CLASS,
+  STAFF_TABLE_MOBILE_TH_LABEL,
+  staffHubActionsHeaderCell,
+  staffHubDataCell,
+  staffHubHeaderCell,
+} from "@/components/admin/staffHubTableUi";
 import { ManagersFiltersBar } from "@/components/admin/ManagersFiltersBar";
 import { StaffHubKpiCollapsible } from "@/components/admin/StaffHubKpiCollapsible";
-import { StaffRealtimeStateCell } from "@/components/admin/StaffRealtimeStateCell";
 import {
   adminStaffCreateSuccessFlashItems,
   adminStaffListFlashItems,
@@ -24,7 +29,7 @@ import { parseStaffListColsFromSearchParam } from "@/lib/adminStaffListColumns";
 import { clampAdminStaffListPageSize, isAdminStaffListPageSize } from "@/lib/adminStaffListPageSize";
 import { getResellerDealerCounts, listDealersPagedForReseller } from "@/lib/repos/staffListPaged";
 import { cn } from "@/lib/cn";
-import { dataTableStickyTh } from "@/lib/ui/dataTableSticky";
+import { dataTableZebraRowClass } from "@/lib/ui/dataTableSticky";
 import { managersToolbarPrimaryButtonClass } from "@/components/admin/managers-toolbar-icon-button";
 
 const LIST_PATH = "/reseller/dealers";
@@ -68,6 +73,41 @@ const COLUMN_LABELS: Record<ColumnId, string> = {
   totalUsers: "Total",
 };
 
+const DEALER_TABLE_MOBILE_TH_LABEL: Partial<Record<ColumnId, string>> = {
+  ...STAFF_TABLE_MOBILE_TH_LABEL,
+  name: "Name",
+  activeUsers: "Act",
+  expiredUsers: "Exp",
+};
+
+const RESELLER_DEALER_CELL_CTX = {
+  portal: "admin" as const,
+  parentModalType: null,
+  parentModalUsername: "",
+  inlineApiPath: "/api/reseller/staff-inline",
+  editorApiBase: "/api/reseller",
+  subscribersPortal: "reseller" as const,
+};
+
+function dealerColumnCellClass(col: ColumnId): string {
+  switch (col) {
+    case "name":
+      return "text-center font-semibold";
+    case "activeUsers":
+      return "text-center tabular-nums font-medium text-emerald-700 dark:text-emerald-300";
+    case "expiredUsers":
+      return "text-center tabular-nums font-medium text-orange-700 dark:text-orange-300";
+    case "totalUsers":
+      return "text-center tabular-nums font-medium text-muted-foreground";
+    case "credits":
+      return "text-center tabular-nums text-muted-foreground";
+    case "state":
+      return "text-center text-muted-foreground";
+    default:
+      return "text-center";
+  }
+}
+
 function firstString(v: string | string[] | undefined): string | undefined {
   if (v == null) return undefined;
   return Array.isArray(v) ? v[0] : v;
@@ -93,16 +133,6 @@ function dealersListPath(sp: {
   if (sp.p && sp.p > 1) params.set("p", String(sp.p));
   const query = params.toString();
   return query ? `${LIST_PATH}?${query}` : LIST_PATH;
-}
-
-function formatInt(n: number) {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(n);
-}
-
-function hasPositiveCount(value: number | string | null | undefined) {
-  if (typeof value === "number") return value > 0;
-  if (typeof value === "string") return Number.parseInt(value, 10) > 0;
-  return false;
 }
 
 function mapDealerSort(sort: SortKey): string {
@@ -248,38 +278,48 @@ export async function ResellerDealersPage({
     ...adminStaffListFlashItems(sp, "dealer"),
   ].filter((item, idx, arr) => arr.findIndex((x) => x.type === item.type && x.message === item.message) === idx);
 
-  const td = "px-3 py-1 align-middle text-sm text-foreground";
-  const sortableHeader = (key: SortKey, label: string, thClassName?: string) => (
-    <th className={dataTableStickyTh(thClassName)}>
-      <Link
-        href={dealersListPath({
-          q: qRaw || undefined,
-          ps: pageSize,
-          status: statusFilter || undefined,
-          sort: key,
-          dir: sortBy === key && sortDir === "asc" ? "desc" : "asc",
-          cols: colsQuery,
-        })}
-        className={cn(
-          "inline-flex items-center gap-1 hover:text-foreground",
-          thClassName?.includes("text-right") ? "justify-end" : "",
-          thClassName?.includes("text-center") ? "justify-center" : "",
-        )}
-      >
-        {label}
-        {sortBy === key ? (
-          <ChevronDown className={cn("h-3.5 w-3.5", sortDir === "asc" ? "rotate-180" : "")} aria-hidden />
-        ) : (
-          <ChevronsUpDown className="h-3.5 w-3.5 opacity-60" aria-hidden />
-        )}
-      </Link>
-    </th>
-  );
+  const tableColumnIds = COLUMN_IDS.filter((id) => visibleColumns.has(id));
+  const staffCell = (col: ColumnId, extra?: string) => staffHubDataCell(col, extra);
+
+  const sortableHeader = (key: SortKey, label: string, thClassName?: string) => {
+    const mobileLabel = DEALER_TABLE_MOBILE_TH_LABEL[key];
+    return (
+      <th key={key} className={staffHubHeaderCell(key, thClassName)}>
+        <Link
+          href={dealersListPath({
+            q: qRaw || undefined,
+            ps: pageSize,
+            status: statusFilter || undefined,
+            sort: key,
+            dir: sortBy === key && sortDir === "asc" ? "desc" : "asc",
+            cols: colsQuery,
+          })}
+          className={cn(
+            "inline-flex items-center gap-1 hover:text-foreground",
+            thClassName?.includes("text-right") ? "justify-end" : "",
+            thClassName?.includes("text-center") ? "justify-center" : "",
+          )}
+        >
+          {mobileLabel ? (
+            <>
+              <span className="sm:hidden">{mobileLabel}</span>
+              <span className="hidden sm:inline">{label}</span>
+            </>
+          ) : (
+            label
+          )}
+          {sortBy === key ? (
+            <ChevronDown className={cn("h-3.5 w-3.5", sortDir === "asc" ? "rotate-180" : "")} aria-hidden />
+          ) : (
+            <ChevronsUpDown className="h-3.5 w-3.5 opacity-60" aria-hidden />
+          )}
+        </Link>
+      </th>
+    );
+  };
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden">
-      <StaffHubListRefreshBridge />
-      
 
       <div className="shrink-0 px-3 pt-3 sm:px-5 sm:pt-4">
       <StaffHubKpiCollapsible
@@ -327,19 +367,12 @@ export async function ResellerDealersPage({
           />
         </div>
 
-        <div className="app-data-table-scroll thin-scrollbar w-full max-w-full min-h-0 min-w-0 flex-1 overflow-auto [--app-data-table-max-h:100%]">
-          <table className="w-full min-w-[1080px] border-collapse text-sm">
+        <StaffHubTableScrollShell columnIds={tableColumnIds}>
+          <table className={STAFF_HUB_TABLE_CLASS}>
             <thead>
               <tr>
-                {visibleColumns.has("name") ? sortableHeader("name", COLUMN_LABELS.name, "py-1.5 text-center") : null}
-                {visibleColumns.has("username") ? sortableHeader("username", COLUMN_LABELS.username, "py-1.5 text-center") : null}
-                {visibleColumns.has("credits") ? sortableHeader("credits", COLUMN_LABELS.credits, "py-1.5 text-center") : null}
-                {visibleColumns.has("status") ? sortableHeader("status", COLUMN_LABELS.status, "py-1.5 text-center") : null}
-                {visibleColumns.has("state") ? sortableHeader("state", COLUMN_LABELS.state, "py-1.5 text-center") : null}
-                {visibleColumns.has("activeUsers") ? sortableHeader("activeUsers", COLUMN_LABELS.activeUsers, "py-1.5 text-center") : null}
-                {visibleColumns.has("expiredUsers") ? sortableHeader("expiredUsers", COLUMN_LABELS.expiredUsers, "py-1.5 text-center") : null}
-                {visibleColumns.has("totalUsers") ? sortableHeader("totalUsers", COLUMN_LABELS.totalUsers, "py-1.5 text-center") : null}
-                <th className={dataTableStickyTh("py-1.5 text-center")}>
+                {tableColumnIds.map((col) => sortableHeader(col, COLUMN_LABELS[col], "py-1 text-center"))}
+                <th className={staffHubActionsHeaderCell("py-1 text-center")}>
                   <span className="inline-flex items-center justify-center" aria-hidden>
                     <Settings2 className="h-4 w-4" />
                   </span>
@@ -350,7 +383,7 @@ export async function ResellerDealersPage({
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={visibleColumns.size + 1} className="px-4 py-12 text-center">
+                  <td colSpan={tableColumnIds.length + 1} className="px-4 py-12 text-center">
                     <p className="text-sm font-medium text-foreground">
                       {qRaw ? "No dealers match your search" : "No dealers under your account yet"}
                     </p>
@@ -362,132 +395,69 @@ export async function ResellerDealersPage({
                   </td>
                 </tr>
               ) : null}
-              {rows.map((r) => (
-                <tr
-                  key={r.username}
-                  className="border-b border-border/70 transition-colors last:border-0 odd:bg-background/80 even:bg-muted/[0.16] hover:bg-muted/30 dark:border-border/40 dark:odd:bg-transparent dark:even:bg-transparent dark:hover:bg-muted/15"
-                >
-                  {visibleColumns.has("name") ? (
-                    <td className={`${td} text-center font-semibold`}>
-                      <InlineEditableStaffCell
-                        rowType="DEALER"
+              {rows.map((r) => {
+                const hubRow = portalStaffHubRowForDetails({
+                  rowType: "DEALER",
+                  username: r.username,
+                  name: r.name,
+                  status: r.status,
+                  credits: r.credits,
+                  dealerCount: 0,
+                  parentReseller: "",
+                  activeUsers: r.activeUserCount,
+                  expiredUsers: r.expiredUserCount,
+                  totalUsers: r.userCount,
+                  stateCurrentLogin: r.currentLoginTime,
+                  stateLastLogin: r.lastLoginTime,
+                });
+                return (
+                  <StaffHubExpandableRow
+                    key={r.username}
+                    colSpan={tableColumnIds.length + 1}
+                    tableColumnIds={tableColumnIds}
+                    expandPersistId={`DEALER:${r.username}`}
+                    rowClassName={dataTableZebraRowClass}
+                    actions={
+                      <AdminDealerRowActions
                         username={r.username}
-                        field="name"
-                        value={r.name || ""}
-                        inlineApiPath="/api/reseller/staff-inline"
+                        displayName={r.name || r.username}
+                        canDelete={r.canDelete}
+                        redirectPath={redirectPath}
+                        status={r.status}
+                        managerLogin=""
+                        resellerLogin={resellerUsername}
+                        credits={r.credits}
+                        activeUsers={r.activeUserCount}
+                        expiredUsers={r.expiredUserCount}
+                        totalUsers={r.userCount}
+                        stateCurrentLogin={r.currentLoginTime}
+                        stateLastLogin={r.lastLoginTime}
+                        stateLastLoginIp={r.lastLoginIp}
+                        stateCurrentLoginIp={r.currentLoginIp}
+                        initialCreditsModal={firstString(sp.credit_user) === r.username ? firstString(sp.credit_modal) : undefined}
+                        staffPortal="reseller"
                       />
-                    </td>
-                  ) : null}
-                  {visibleColumns.has("username") ? (
-                    <td className={cn(td, "text-center")}>
-                      <AdminStaffEditModalTrigger
-                        rowType="DEALER"
-                        username={r.username}
-                        editorApiBase="/api/reseller"
-                        label={<span className="text-sm font-medium text-foreground hover:text-primary">{r.username}</span>}
-                        className="inline cursor-pointer bg-transparent p-0 text-left"
+                    }
+                    details={
+                      <StaffHubRowDetailsPanel
+                        row={hubRow}
+                        columnLabels={COLUMN_LABELS}
+                        tableColumnIds={tableColumnIds}
+                        cellCtx={RESELLER_DEALER_CELL_CTX}
                       />
-                    </td>
-                  ) : null}
-                  {visibleColumns.has("credits") ? (
-                    <td className={cn(td, "text-center tabular-nums text-muted-foreground")}>{formatInt(r.credits)}</td>
-                  ) : null}
-                  {visibleColumns.has("status") ? (
-                    <td className={`${td} text-center`}>
-                      <StaffHubStatusCell
-                        rowType="DEALER"
-                        username={r.username}
-                        value={r.status}
-                        inlineApiPath="/api/reseller/staff-inline"
-                      />
-                    </td>
-                  ) : null}
-                  {visibleColumns.has("state") ? (
-                    <td className={cn(td, "text-center text-muted-foreground")}>
-                      <StaffRealtimeStateCell
-                        username={r.username}
-                        dbCurrentLogin={r.currentLoginTime}
-                        dbLastLogin={r.lastLoginTime}
-                      />
-                    </td>
-                  ) : null}
-                  {visibleColumns.has("activeUsers") ? (
-                    <td className={cn(td, "text-center tabular-nums font-medium text-emerald-700 dark:text-emerald-300")}>
-                      {hasPositiveCount(r.activeUserCount) ? (
-                        <AdminUsersListModalTrigger
-                          rowType="DEALER"
-                          username={r.username}
-                          displayName={r.name || r.username}
-                          status="active"
-                          subscribersPortal="reseller"
-                          className="inline rounded-none border-0 bg-transparent p-0 no-underline shadow-none outline-none ring-0 hover:bg-transparent hover:text-primary focus:bg-transparent focus-visible:bg-transparent active:bg-transparent"
-                          label={formatInt(r.activeUserCount)}
-                        />
-                      ) : (
-                        <span className="text-muted-foreground">{formatInt(r.activeUserCount)}</span>
-                      )}
-                    </td>
-                  ) : null}
-                  {visibleColumns.has("expiredUsers") ? (
-                    <td className={cn(td, "text-center tabular-nums font-medium text-orange-700 dark:text-orange-300")}>
-                      {hasPositiveCount(r.expiredUserCount) ? (
-                        <AdminUsersListModalTrigger
-                          rowType="DEALER"
-                          username={r.username}
-                          displayName={r.name || r.username}
-                          status="expired"
-                          subscribersPortal="reseller"
-                          className="inline rounded-none border-0 bg-transparent p-0 no-underline shadow-none outline-none ring-0 hover:bg-transparent hover:text-primary focus:bg-transparent focus-visible:bg-transparent active:bg-transparent"
-                          label={formatInt(r.expiredUserCount)}
-                        />
-                      ) : (
-                        <span className="text-muted-foreground">{formatInt(r.expiredUserCount)}</span>
-                      )}
-                    </td>
-                  ) : null}
-                  {visibleColumns.has("totalUsers") ? (
-                    <td className={cn(td, "text-center tabular-nums font-medium text-muted-foreground")}>
-                      {hasPositiveCount(r.userCount) ? (
-                        <AdminUsersListModalTrigger
-                          rowType="DEALER"
-                          username={r.username}
-                          displayName={r.name || r.username}
-                          status=""
-                          subscribersPortal="reseller"
-                          className="inline rounded-none border-0 bg-transparent p-0 font-medium text-foreground no-underline shadow-none outline-none ring-0 hover:bg-transparent hover:text-primary focus:bg-transparent focus-visible:bg-transparent active:bg-transparent"
-                          label={formatInt(r.userCount)}
-                        />
-                      ) : (
-                        <span>{formatInt(r.userCount)}</span>
-                      )}
-                    </td>
-                  ) : null}
-                  <td className={`${td} text-center`}>
-                    <AdminDealerRowActions
-                      username={r.username}
-                      displayName={r.name || r.username}
-                      canDelete={r.canDelete}
-                      redirectPath={redirectPath}
-                      status={r.status}
-                      managerLogin=""
-                      resellerLogin={resellerUsername}
-                      credits={r.credits}
-                      activeUsers={r.activeUserCount}
-                      expiredUsers={r.expiredUserCount}
-                      totalUsers={r.userCount}
-                      stateCurrentLogin={r.currentLoginTime}
-                      stateLastLogin={r.lastLoginTime}
-                      stateLastLoginIp={r.lastLoginIp}
-                      stateCurrentLoginIp={r.currentLoginIp}
-                      initialCreditsModal={firstString(sp.credit_user) === r.username ? firstString(sp.credit_modal) : undefined}
-                      staffPortal="reseller"
-                    />
-                  </td>
-                </tr>
-              ))}
+                    }
+                  >
+                    {tableColumnIds.map((col) => (
+                      <td key={col} className={staffCell(col, dealerColumnCellClass(col))}>
+                        <StaffHubRowCellContent columnId={col} row={hubRow} ctx={RESELLER_DEALER_CELL_CTX} />
+                      </td>
+                    ))}
+                  </StaffHubExpandableRow>
+                );
+              })}
             </tbody>
           </table>
-        </div>
+        </StaffHubTableScrollShell>
 
         <div className="flex shrink-0 flex-col gap-1 border-t border-border/50 px-2 py-1 text-xs sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-2 sm:px-3 sm:py-1.5">
           <nav
